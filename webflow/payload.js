@@ -41,7 +41,7 @@ function fragmentRaw(name, html, page) {
     const list = $(el).attr('class').split(/\s+/).filter(c => c && !STATE.test(c));
     const plain = list.filter(c => !/^is-/.test(c)), combos = list.filter(c => /^is-/.test(c));
     for (const c of plain) if (!defined.has(c) && !need.includes(c)) need.push(c);
-    for (const k of combos) { const base = plain.find(c => rules.has('.' + c + '.' + k + '|0')) || plain[0], sel = base + '.' + k; if (!defined.has(sel) && !need.includes(sel)) need.push(sel); }
+    for (const k of combos) { const base = plain.find(c => rules.has('.' + c + '.' + k + '|0')) || plain[0], sel = base ? base + '.' + k : k; /* a state class on its own, such as is-locked on a list item */ if (!defined.has(sel) && !need.includes(sel)) need.push(sel); }
   });
   /* utilities first, then components in the stylesheet's own order: Webflow writes classes in the order they were made */
   const rank = c => c.includes('.') ? 2 : c.includes('_') ? 1 : 0;

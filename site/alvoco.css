@@ -824,6 +824,9 @@ html :where(.home-rostos_item){flex:none;width:clamp(272px,38vw,600px);scroll-sn
 html :where(.home-rostos_card){width:100%}
 html :where(.embed-contents){display:contents}
 [data-embed]>.w-embed{display:contents}
+html:not(.js) .home-trail_text{opacity:1;transform:none}
+html :where(.walk-scene_fog.is-first){top:58%}
+html :where(.walk-scene_fog.is-second){top:65%;left:-35%}
 html :where(.rostos-library_item){}
 html :where(.rostos-library_list){}
 html :where(.rosto_caption-name){}

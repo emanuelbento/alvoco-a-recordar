@@ -3,7 +3,8 @@ const fs = require('fs'), path = require('path');
 const C = require('./convert.js'), { SRC, OUT, SITE, M } = C;
 const read = f => fs.readFileSync(path.join(SRC, f), 'utf8');
 
-/* rules the Webflow structure needs on top of the prototype's (old names, converted with the rest) */
+/* rules the Webflow structure needs on top of the prototype's (old names, converted with the rest).
+   html:not(.js) also describes the Webflow Designer canvas, where the script never runs: text rests in its final state there. */
 const EXTRA = `
 .page-wrapper{}
 .main-wrapper{}
@@ -15,6 +16,9 @@ const EXTRA = `
 .rs-c{width:100%}
 .embed-contents{display:contents}
 [data-embed]>.w-embed{display:contents}
+html:not(.js) .tr-t{opacity:1;transform:none}
+.fog.is-first{top:58%}
+.fog.is-second{top:65%;left:-35%}
 .rec-i{}
 .shelf-l{}
 .ap-n{}
@@ -143,6 +147,15 @@ for (const [name, file] of Object.entries(pages)) {
   if (row.length) { row.addClass('w-dyn-items').attr('role', 'list').html(stripItems); row.wrap('<div class="home-rostos_list w-dyn-list"></div>'); }
   for (const [sel, id, mode] of M.EMBEDS[name] || []) { const el = $(sel); if (el.length !== 1) throw new Error('embed ' + id + ': ' + el.length + ' matches');
     if (mode === 'inner') { el.parent().attr('data-embed', id); el.wrap('<div class="w-embed"></div>'); } else el.wrap('<div class="embed-contents" data-embed="' + id + '"><div class="w-embed"></div></div>'); }
+  /* the outline of the country was traced at far more points than its size on screen can show */
+  $('.contact-map_outline').each((i, el) => { const pts = $(el).attr('d').replace(/Z\s*$/, '').split(/[ML]/).filter(Boolean).map(t => t.trim().split(/[ ,]+/).map(Number));
+    const dist = (p, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = dx * dx + dy * dy; if (!l) return Math.hypot(p[0] - a[0], p[1] - a[1]); const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l)); return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy); };
+    const rdp = (a, e) => { if (a.length < 3) return a; let m = 0, k = 0; for (let j = 1; j < a.length - 1; j++) { const d = dist(a[j], a[0], a[a.length - 1]); if (d > m) { m = d; k = j; } } return m > e ? [...rdp(a.slice(0, k + 1), e).slice(0, -1), ...rdp(a.slice(k), e)] : [a[0], a[a.length - 1]]; };
+    const out = rdp(pts, 0.9), f = n => String(Math.round(n * 10) / 10);
+    $(el).attr('d', 'M' + out.map(p => f(p[0]) + ' ' + f(p[1])).join('L') + 'Z'); });
+  /* inline positions become combo classes: Webflow has no inline styles */
+  $('.walk-scene_fog[style]').each((i, el) => { $(el).addClass({ 'top:58%': 'is-first', 'top:65%;left:-35%': 'is-second' }[$(el).attr('style')] || 'is-unknown').removeAttr('style'); });
+  if ($('main [style]').length) throw new Error(name + ': inline style left: ' + $.html($('main [style]').first()).slice(0, 120));
   $('main').addClass('main-wrapper');
   docs.push($);
   later.push(() => {
