@@ -128,10 +128,18 @@ Every page of the prototype exists in Webflow, built by `payload.js` fragments p
 
 ### Still open
 - No photograph is in Webflow Assets and no CMS item is published: every image element is empty. The upload hosts are not reachable from the build machine.
-- Agenda (page and home list) and Documentos are static markup; their CMS collections exist but are not bound. Their two template pages are empty and cannot be set to draft through the API.
+- Documentos is static markup; its CMS collection exists, empty, and is not bound. The Agenda and Documentos template pages are empty and cannot be set to draft through the API.
 - 404 page: not built (utility pages are not exposed by the API).
 - SEO title of the rosto template is static; bind it to the name in the page settings.
 - DOM elements created by the builder (figure, figcaption, dl, dt, dd, i, b, mark, canvas, svg) keep a duplicate raw `class` attribute next to their Webflow class. Harmless, untidy.
 - Links are URL links with a raw `href` attribute, not page links.
 - Class values use the Webflow variable names as text; they resolve, but are not linked in the variables panel.
 - Nothing has been published, so the real Webflow render has never been seen. Publishing needs Emanuel's go-ahead.
+
+## Agenda on the CMS (21 Nov 2026, 11h40)
+
+- The agenda page list and the home "O ano em Alvoco" list are collection lists on Agenda, sorted by `mes` then `dia`: agenda wrapper `6093fc37-a31d-9187-d006-cdef92f7f117` (page agenda), home wrapper `f6ece956-28a0-5a30-3d31-67ab6f89835d`.
+- A collection list must be connected to its collection (`source`) before anything can be added inside its item.
+- A class is created by a CSS rule in the builder call even when no element in that call uses it (`.agenda_collection{}`), so it can be applied afterwards with `set_style`.
+- Item attributes: `data-mes` (1 to 12) and `data-dia` on the item; `data-pagina` on the link, bound to the Link field `ligacao`, which accepts a path such as `/caminhada`. New field `texto-da-ligacao` holds the words of the link.
+- Without the script (and on the Designer canvas) the list is already right: "Data a anunciar" is written by CSS when `data-dia` is empty and the link hides when `data-pagina` is empty. The script only adds the year, reorders from today and marks the next date.

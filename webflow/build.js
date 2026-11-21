@@ -17,6 +17,12 @@ const EXTRA = `
 .embed-contents{display:contents}
 [data-embed]>.w-embed{display:contents}
 html:not(.js) .tr-t{opacity:1;transform:none}
+.ag-i:not([data-dia]) .ag-dt::after,.ag-i[data-dia=""] .ag-dt::after{content:"Data a anunciar";color:rgb(246 248 243 / .56)}
+.agenda_link[data-pagina=""],.agenda_link:not([data-pagina]){display:none}
+.agenda_link-label{display:inline}
+.agenda_date-label{}
+.agenda_collection{}
+.home-year_collection{}
 .fog.is-first{top:58%}
 .fog.is-second{top:65%;left:-35%}
 .rec-i{}
@@ -93,6 +99,17 @@ const PATCHES = [
   if (!RM && nx) gsap.fromTo($('.rosto-next_image img', nx), { scale: 1.25 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: nx, start: 'top bottom', end: 'bottom bottom', scrub: true } });
 }
 `],
+  /* the agenda is a collection list: month and day come as data-mes (1 to 12) and data-dia, the label without the year */
+  [`const nx = its.find(i => +i.dataset.mo > mo) || its[0];`, `const nx = its.find(i => +i.dataset.mes - 1 > mo) || its[0];`],
+  [`const all = $$('.ag-i', m), ord = [...all.filter(i => +i.dataset.mo > mo), ...all.filter(i => +i.dataset.mo <= mo)];`,
+   `const mth = i => +i.dataset.mes - 1, all = $$('.ag-i', m), ord = [...all.filter(i => mth(i) > mo), ...all.filter(i => mth(i) <= mo)];`],
+  [`ord.forEach(i => { const y = +i.dataset.mo > mo ? yr : yr + 1, sp = $('.ag-dt span', i); i.dataset.y = y; sp.textContent = sp.textContent.replace(/ de \\d{4}$/, '') + ' de ' + y; ls.appendChild(i); });`,
+   `ord.forEach(i => { const y = mth(i) > mo ? yr : yr + 1, sp = $('.agenda_date-label', i), a = $('.agenda_link', i); i.dataset.y = y; sp.textContent = sp.textContent.replace(/ de \\d{4}$/, '') + ' de ' + y; ls.appendChild(i);
+    if (a) a.dataset.pagina ? a.setAttribute('href', a.dataset.pagina) : a.remove(); });`],
+  [`if (nx.dataset.day) { const d = Math.ceil((new Date(+nx.dataset.y, +nx.dataset.mo, +nx.dataset.day) - now) / 864e5);`,
+   `if (nx.dataset.dia) { const d = Math.ceil((new Date(+nx.dataset.y, mth(nx), +nx.dataset.dia) - now) / 864e5);`],
+  [`$('.ag-nx-d', m).textContent = $('.ag-dt span', nx).textContent + '. ' + left + '.';`,
+   `$('.ag-nx-d', m).textContent = $('.agenda_date-label', nx).textContent + '. ' + left + '.';`],
   /* the faces now live in the CMS: the copy the prototype carried goes */
   [/const ROSTOS = \[[\s\S]*?\n\];\n/, ''],
   [/const recHTML = [^\n]*\n/, ''],
@@ -139,6 +156,15 @@ for (const [name, file] of Object.entries(pages)) {
   const src = read(file), made = SOURCE[name] ? SOURCE[name](src) : src;
   if (SOURCE[name] && made === src) throw new Error('nothing to fill in ' + file);
   const { $, sprite } = C.convertHtml(made, name);
+  const tag = (el, t) => { el.name = el.tagName = t; };
+  if (name === 'home') { const ul = $('.home-year_list'); ul.children().each((i, li) => { const $li = $(li); $li.attr('data-mes', +$li.attr('data-mo') + 1).removeAttr('data-mo'); tag(li, 'div');
+      $li.find('.home-year_date,.home-year_title,.home-year_description').each((j, e) => tag(e, 'div')); });
+    tag(ul[0], 'div'); dyn($, '.home-year_list', '.home-year_item'); ul.wrap('<div class="home-year_collection w-dyn-list"></div>'); }
+  if (name === 'agenda') { const ol = $('.agenda_list'); ol.children().each((i, li) => { const $li = $(li); $li.attr('data-mes', +$li.attr('data-mo') + 1).removeAttr('data-mo').attr('data-dia', $li.attr('data-day') || '').removeAttr('data-day'); tag(li, 'div');
+      const dt = $li.find('.agenda_date'), label = dt.find('span').text().replace(/ de \d{4}$/, ''); dt.replaceWith('<div class="agenda_date"><div class="agenda_date-label">' + label + '</div></div>');
+      const a = $li.find('a'), page = a.attr('href') || '', text = a.text(); a.remove();
+      $li.find('.agenda_text').append('<a class="text-style-link agenda_link" href="/agenda" data-pagina="' + page + '"><div class="agenda_link-label">' + text + '</div></a>'); });
+    tag(ol[0], 'div'); dyn($, '.agenda_list', '.agenda_item'); ol.wrap('<div class="agenda_collection w-dyn-list"></div>'); }
   if (name === 'rostos') { dyn($, '.rostos-library_shelf', '.rostos-library_item'); $('.rostos-library_shelf').wrap('<div class="rostos-library_list w-dyn-list"></div>'); }
   if (name === 'rosto') { dyn($, '.rosto-next_items', '.rosto-next_item'); $('.rosto-next_list').addClass('w-dyn-list'); $('.rosto_column').addClass('w-richtext'); }
   $('.rostos-library_alias,.rosto_header-alias,.rosto_caption-credit').each((i, el) => { if (!$(el).text().trim()) $(el).addClass('w-dyn-bind-empty'); });

@@ -380,7 +380,7 @@ function join(m){
 }
 function nextTag(m){
   const its = $$('.home-year_item', m); if (!its.length) return; const mo = new Date().getMonth();
-  const nx = its.find(i => +i.dataset.mo > mo) || its[0]; $('.home-year_title-wrap', nx).insertAdjacentHTML('beforeend', '<span class="tag is-now">A seguir</span>');
+  const nx = its.find(i => +i.dataset.mes - 1 > mo) || its[0]; $('.home-year_title-wrap', nx).insertAdjacentHTML('beforeend', '<span class="tag is-now">A seguir</span>');
 }
 
 /* ================= HOME ================= */
@@ -568,13 +568,14 @@ function caminhada(m){
 function agenda(m){
   const ls = $('.agenda_list', m), lw = $('.agenda_list-wrap', m), v = $('.agenda_line', m), now = new Date(), mo = now.getMonth(), yr = now.getFullYear();
   // only what is still to come: this year's remaining dates first, then next year's
-  const all = $$('.agenda_item', m), ord = [...all.filter(i => +i.dataset.mo > mo), ...all.filter(i => +i.dataset.mo <= mo)];
-  ord.forEach(i => { const y = +i.dataset.mo > mo ? yr : yr + 1, sp = $('.agenda_date span', i); i.dataset.y = y; sp.textContent = sp.textContent.replace(/ de \d{4}$/, '') + ' de ' + y; ls.appendChild(i); });
+  const mth = i => +i.dataset.mes - 1, all = $$('.agenda_item', m), ord = [...all.filter(i => mth(i) > mo), ...all.filter(i => mth(i) <= mo)];
+  ord.forEach(i => { const y = mth(i) > mo ? yr : yr + 1, sp = $('.agenda_date-label', i), a = $('.agenda_link', i); i.dataset.y = y; sp.textContent = sp.textContent.replace(/ de \d{4}$/, '') + ' de ' + y; ls.appendChild(i);
+    if (a) a.dataset.pagina ? a.setAttribute('href', a.dataset.pagina) : a.remove(); });
   const nx = ord[0]; nx.classList.add('nx');
   let left = 'Data a anunciar';
-  if (nx.dataset.day) { const d = Math.ceil((new Date(+nx.dataset.y, +nx.dataset.mo, +nx.dataset.day) - now) / 864e5); left = d > 1 ? 'Faltam ' + d + ' dias' : d === 1 ? 'Falta 1 dia' : 'É hoje'; }
+  if (nx.dataset.dia) { const d = Math.ceil((new Date(+nx.dataset.y, mth(nx), +nx.dataset.dia) - now) / 864e5); left = d > 1 ? 'Faltam ' + d + ' dias' : d === 1 ? 'Falta 1 dia' : 'É hoje'; }
   $('.agenda-next_title', m).textContent = $('h3', nx).textContent;
-  $('.agenda-next_date', m).textContent = $('.agenda_date span', nx).textContent + '. ' + left + '.';
+  $('.agenda-next_date', m).textContent = $('.agenda_date-label', nx).textContent + '. ' + left + '.';
   const lit = p => { const h = lw.offsetHeight; ord.forEach((i, k) => i.classList.toggle('on', !k || i.offsetTop + 14 <= p * h)); };
   if (RM) { v.style.setProperty('--p', 1); lit(2); return; }
   const o = { p: 0 }; lit(0);
