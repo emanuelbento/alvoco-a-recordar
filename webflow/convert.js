@@ -71,6 +71,7 @@ function nativeDecls(decls) {
   }
   return out;
 }
+const extSel = new Set();
 const native = new Map(); // "sel|bp" -> Map(prop -> value), insertion ordered
 const nativeAdd = (sel, bp, decls) => { const k = sel + '|' + bp; if (!native.has(k)) native.set(k, new Map()); const m = native.get(k); for (const [p, v] of nativeDecls(decls)) { m.delete(p); m.set(p, v); } };
 const declText = decls => decls.map(([p, v]) => p + ':' + v).join(';');
@@ -80,7 +81,9 @@ function convertCss(css) {
     const decls = []; rule.walkDecls(d => { decls.push([d.prop, d.value + (d.important ? '!important' : '')]); });
     if (rule.selector.trim() === ':root') return ':root{' + declText(mq ? decls : decls.map(([p, v]) => [p, M.ALIAS[p] ? 'var(' + M.ALIAS[p] + ',' + v + ')' : v])) + '}';
     const sels = splitTop(tx(rule.selector)), nat = [], other = [], bp = mq ? bpOf(mq) : 0;
-    for (const s of sels) (isNative(s) && (!mq || bp) ? nat : other).push(s);
+    /* a class with a rule at a width Webflow has no breakpoint for keeps its narrower rules beside it, in order */
+    if (mq && !bp && /max-width/.test(mq)) sels.filter(isNative).forEach(x => extSel.add(x));
+    for (const s of sels) (isNative(s) && (!mq || (bp && !extSel.has(s))) ? nat : other).push(s);
     let o = '';
     if (nat.length) { nat.forEach(s => nativeAdd(s, bp, decls)); o += nat.map(s => 'html :where(' + s + ')').join(',') + '{' + declText(decls) + '}'; }
     if (other.length) o += (o ? '\n' : '') + other.join(',') + '{' + declText(decls) + '}';

@@ -10,11 +10,21 @@ const EXTRA = `
 .global-styles{}
 .svg-sprite{position:absolute;width:0;height:0;overflow:hidden}
 .rs-list{}
+.lk{display:inline}
 .rs-i{flex:none;width:clamp(272px,38vw,600px);scroll-snap-align:start}
 .rs-c{width:100%}
+.embed-contents{display:contents}
+[data-embed]>.w-embed{display:contents}
+.rec-i{}
+.shelf-l{}
+.ap-n{}
+.ap-c{}
+.rnx-l{}
+.rnx-ls{}
+.rnx-it:not(:first-child){display:none}
 .tr-b[data-i="0"]{--i:0}.tr-b[data-i="1"]{--i:1}.tr-b[data-i="2"]{--i:2}.tr-b[data-i="3"]{--i:3}.tr-b[data-i="4"]{--i:4}
 `;
-Object.assign(M.G, { 'rs-i': 'home-rostos_item', 'rs-list': 'home-rostos_list' });
+Object.assign(M.G, { 'rs-i': 'home-rostos_item', 'rs-list': 'home-rostos_list', 'shelf-l': 'rostos-library_list' });
 
 /* Webflow ships tag defaults the design never had. They are returned to the browser's own here. */
 const RESET = `@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap");
@@ -51,6 +61,39 @@ const PATCHES = [
     re.classList.remove('w-dyn-bind-empty');
     if (a && !tw) { ne.textContent = a; re.textContent = n + (age ? ', ' + age : ''); } else re.textContent = a ? a + (age ? ', ' + age : '') : 'Alvoco das Várzeas'; });
   if (!$('.rs-c', row)) return;\n`],
+  /* the library and the single face are Webflow collection pages: the script completes what the CMS cannot bind */
+  [`const sh = $('.shelf', m); sh.innerHTML = ROSTOS.map(recHTML).join('');\n  $('.lib-n', m).textContent = ROSTOS.length + ' rostos';`,
+   `const sh = $('.shelf', m), recs = $$('.rec', sh);
+  recs.forEach(c => { const ne = $('.rostos-library_name', c), ae = $('.rostos-library_alias', c), n = ne.textContent.trim(), a = ae.textContent.trim(), age = c.dataset.idade, im = $('img', c);
+    c.dataset.pt = first(n); if (c.dataset.slug) c.setAttribute('href', '/rosto/' + c.dataset.slug);
+    if (im) { c.dataset.img = im.currentSrc || im.src; if (!im.alt) im.alt = 'Retrato de ' + n; }
+    ae.classList.remove('w-dyn-bind-empty'); ae.textContent = a ? a + (age ? ', ' + age : '') : c.dataset.escrito ? 'Alvoco das Várzeas' : 'Registo por escrever'; });
+  $('.lib-n', m).textContent = recs.length + ' rostos';`],
+  [/function rosto\(m\)\{[\s\S]*?\n\}\n/, `function rosto(m){
+  const slug = decodeURIComponent(location.pathname.replace(/\\/+$/, '').split('/').pop());
+  const n = $('.rosto_title', m).textContent.trim(), f = first(n), fill = (e, t) => { e.classList.remove('w-dyn-bind-empty'); e.textContent = t; };
+  const al = $('.rosto_header-alias', m), alias = [al.textContent.trim(), al.dataset.idade ? al.dataset.idade + ' à data do registo' : ''].filter(Boolean).join(', ');
+  if (alias) fill(al, alias); else al.remove();
+  fill($('.rosto_caption-name', m), n + ', Alvoco das Várzeas');
+  const cr = $('.rosto_caption-credit', m); if (!cr.textContent.trim()) fill(cr, 'Fotografia de Emanuel Bento');
+  const im = $('.rosto_image-wrap img', m); if (im && !im.alt) im.alt = 'Retrato de ' + n;
+  const ld = $('.rosto_lede', m), col = $('.rosto_column', m), q = $('.rosto_quote', m);
+  if (!ld.textContent.trim()) { fill(ld, 'O registo de ' + f + ' ainda está por escrever.'); col.classList.remove('w-dyn-bind-empty');
+    col.innerHTML = '<p>Conheces a história de ' + f + '? Uma alcunha, um ofício, uma casa, uma tarde que ficou. Conta-nos e ajudas a completar este registo.</p><p><a class="button is-outline" href="/contactos#memoria">Contar uma memória</a></p>'; }
+  if (!q.textContent.trim()) q.remove();
+  /* the collection list holds every face: only the one after this page stays */
+  const its = $$('.rosto-next_item', m), at = its.findIndex(x => $('.rosto-next_component', x).dataset.slug === slug), nx = its[(at + 1) % its.length];
+  its.forEach(x => { if (x !== nx) x.remove(); });
+  if (nx) { const a = $('.rosto-next_component', nx); a.setAttribute('href', '/rosto/' + a.dataset.slug); a.dataset.pt = first($('.rosto-next_title', a).textContent.trim()); }
+  dots(m);
+  if (!RM && nx) gsap.fromTo($('.rosto-next_image img', nx), { scale: 1.25 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: nx, start: 'top bottom', end: 'bottom bottom', scrub: true } });
+}
+`],
+  /* the faces now live in the CMS: the copy the prototype carried goes */
+  [/const ROSTOS = \[[\s\S]*?\n\];\n/, ''],
+  [/const recHTML = [^\n]*\n/, ''],
+  [/const img = s => [^\n]*\n/, ''],
+  [/const sub = r => [^\n]*\n/, ''],
   /* the loader's logo is drawn from the sprite, so the paths exist once in the page */
   [/function loader\(ready\)\{\n/, `function loader(ready){\n  { const mk = $('#alv-mark'), wd = $('#alv-word'); if (mk && wd) { $('.ld-line').innerHTML = $('.ld-solid').innerHTML = mk.innerHTML; $('.ld-word').innerHTML = wd.innerHTML; } }\n`],
 ];
@@ -65,14 +108,41 @@ for (const f of fs.readdirSync(path.join(SRC, 'assets/fonts'))) fs.copyFileSync(
 const ROSTOS = new Function('return ' + read('assets/app.js').match(/const ROSTOS = (\[[\s\S]*?\n\]);/)[1])();
 const stripItems = ROSTOS.map(r => `<div role="listitem" class="home-rostos_item w-dyn-item"><a class="home-rostos_card" href="/rostos" data-slug="${r.s}"${r.age ? ` data-idade="${r.age}"` : ''}><div class="home-rostos_image-wrap image-wrapper"><img class="home-rostos_image image-cover" src="/alvoco2/assets/img/${r.s}.webp" alt="Retrato de ${r.n}" loading="lazy" width="1600" height="1067">${r.quote ? `<p class="home-rostos_quote">${r.quote}</p>` : ''}</div><div class="home-rostos_meta"><div class="home-rostos_name">${r.n}</div><div class="home-rostos_role${r.a ? '' : ' w-dyn-bind-empty'}">${r.a || ''}</div></div></a></div>`).join('');
 
+/* ---------- the two collection pages, written as the CMS renders them (old names, converted with the rest) ---------- */
+const recItem = r => `<div class="rec-i"><a class="rec" href="rosto.html#${r.s}" data-slug="${r.s}"${r.age ? ` data-idade="${r.age}"` : ''}${r.lede ? ` data-escrito="${r.lede.replace(/"/g, '&quot;')}"` : ''}><div class="ph"><img src="assets/img/${r.s}.webp" alt="Retrato de ${r.n}" loading="lazy" width="1600" height="1067"></div><div class="rec-m"><b>${r.n}</b><div class="al">${r.a || ''}</div></div></a></div>`;
+const rostoMain = r => `
+<section class="ah w">
+  <div class="ah-m" data-r="fade"><span>Rostos Alvocenses</span><a class="ul" href="rostos.html">Voltar a todos os rostos</a></div>
+  <h1 class="d1" data-r="lines">${r.n}</h1><div class="alc" data-r="fade"${r.age ? ` data-idade="${r.age}"` : ''}>${r.a || ''}</div>
+</section>
+<section class="ap w"><figure><div class="ph" data-r="img"><img src="assets/img/${r.s}.webp" alt="Retrato de ${r.n}" width="1600" height="1067"></div><figcaption><div class="ap-n">${r.n}</div><div class="ap-c">${r.credit || ''}</div></figcaption></figure></section>
+<section class="ab w sec"><div class="g">
+  <p class="ab-l big" data-r="words">${r.lede || ''}</p><div class="col prose" data-r="fade">${(r.body || []).map(p => `<p>${p}</p>`).join('')}</div><blockquote class="q" data-r="lines">${r.quote || ''}</blockquote>
+  <p class="cr" data-r="fade">Rostos Alvocenses é uma série de Emanuel Bento, iniciada em 2018 e continuada com a Associação Alvôco a Recordar.</p>
+</div></section>
+<div class="rnx-l"><div class="rnx-ls">${ROSTOS.map(x => `<div class="rnx-it"><a class="rnx" href="rosto.html#${x.s}" data-slug="${x.s}" data-tema="claro"><div class="rnx-i" aria-hidden="true"><img src="assets/img/${x.s}.webp" alt="" loading="lazy"></div><div class="rnx-t w"><span class="lb">A seguir</span><div class="d1">${x.n}</div></div></a></div>`).join('')}</div></div>
+`;
+const SOURCE = {
+  rostos: h => h.replace('<div class="shelf"></div>', '<div class="shelf">' + ROSTOS.map(recItem).join('') + '</div>'),
+  rosto: h => h.replace('<div id="artigo"></div>', rostoMain(ROSTOS[0])),
+};
+const dyn = ($, list, item) => { $(item).addClass('w-dyn-item').attr('role', 'listitem'); $(list).addClass('w-dyn-items').attr('role', 'list'); };
+
 /* ---------- pages ---------- */
-const pages = { home: 'index.html' };
+const pages = M.PAGES;
 const dom = {}, docs = [], later = [];
 for (const [name, file] of Object.entries(pages)) {
-  const { $, sprite } = C.convertHtml(read(file), name);
+  const src = read(file), made = SOURCE[name] ? SOURCE[name](src) : src;
+  if (SOURCE[name] && made === src) throw new Error('nothing to fill in ' + file);
+  const { $, sprite } = C.convertHtml(made, name);
+  if (name === 'rostos') { dyn($, '.rostos-library_shelf', '.rostos-library_item'); $('.rostos-library_shelf').wrap('<div class="rostos-library_list w-dyn-list"></div>'); }
+  if (name === 'rosto') { dyn($, '.rosto-next_items', '.rosto-next_item'); $('.rosto-next_list').addClass('w-dyn-list'); $('.rosto_column').addClass('w-richtext'); }
+  $('.rostos-library_alias,.rosto_header-alias,.rosto_caption-credit').each((i, el) => { if (!$(el).text().trim()) $(el).addClass('w-dyn-bind-empty'); });
   $('img[src^="assets/"]').each((i, el) => $(el).attr('src', '/alvoco2/' + $(el).attr('src')));
   const row = $('.home-rostos_row');
   if (row.length) { row.addClass('w-dyn-items').attr('role', 'list').html(stripItems); row.wrap('<div class="home-rostos_list w-dyn-list"></div>'); }
+  for (const [sel, id, mode] of M.EMBEDS[name] || []) { const el = $(sel); if (el.length !== 1) throw new Error('embed ' + id + ': ' + el.length + ' matches');
+    if (mode === 'inner') { el.parent().attr('data-embed', id); el.wrap('<div class="w-embed"></div>'); } else el.wrap('<div class="embed-contents" data-embed="' + id + '"><div class="w-embed"></div></div>'); }
   $('main').addClass('main-wrapper');
   docs.push($);
   later.push(() => {
@@ -95,7 +165,8 @@ for (const [name, file] of Object.entries(pages)) {
 C.setDocs(docs);
 
 /* ---------- stylesheet ---------- */
-const ext = C.convertCss(read('assets/app.css') + EXTRA);
+/* "nx" is also the agenda's state for the next date: the block at the foot of a face gets its own name */
+const ext = C.convertCss(read('assets/app.css').replace(/^\.nx(?=[{\s-])/gm, '.rnx') + EXTRA);
 const head = '/* Alvôco a Recordar. Generated by webflow/build.js from the prototype: edit the source, not this file. */\n';
 fs.writeFileSync(path.join(SITE, 'alvoco.css'), head + RESET + '\n' + ext + '\n');
 

@@ -63,6 +63,53 @@ const G = {
   fm: 'form_grid', fl: 'form_field', bl: 'form_field-line', ck: 'form_field-check', er: 'form_field-error',
   hn: 'form_field-hint', 'dob-i': 'form_date', lg: 'form_legend', chips: 'form_chips', check: 'form_checkbox',
   bx: 'form_checkbox-box', mst: 'form_required', 'er-g': 'form_group-error',
+  // inner pages: header
+  ph1: 'section_page-header', 'ph1-m': 'page-header_meta',
+  // sobre
+  chs: 'section_about-chapters', ch: 'chapter_component', 'ch-in': 'chapter_inner', 'ch-tx': 'chapter_text',
+  'ch-y': 'chapter_year', 'ch-im': 'chapter_image', 'ch-q': 'chapter_quote',
+  acts: 'about-activities_list', 'act-i': 'about-activities_item',
+  'og-g': 'about-board_grid', 'og-l': 'about-board_intro', og: 'about-board_list', vz: 'about-board_empty',
+  // rostos
+  'lib-bar': 'rostos-library_bar', 'lib-n': 'rostos-library_count', tog: 'rostos-library_toggle',
+  shelf: 'rostos-library_shelf', 'lib-c': 'rostos-library_call', rec: 'rostos-library_card',
+  'rec-m': 'rostos-library_meta', fol: 'rostos-library_follower',
+  'rec-i': 'rostos-library_item',
+  ab: 'rosto_body', ah: 'rosto_header', 'ah-m': 'rosto_header-meta', ap: 'rosto_portrait',
+  'ab-l': 'rosto_lede', 'ap-n': 'rosto_caption-name', 'ap-c': 'rosto_caption-credit',
+  'rnx-l': 'rosto-next_list', 'rnx-ls': 'rosto-next_items', 'rnx-it': 'rosto-next_item', rnx: 'rosto-next_component',
+  'rnx-i': 'rosto-next_image', 'rnx-t': 'rosto-next_text',
+  // caminhada
+  ci: 'section_walk-intro', 'ci-r': 'walk-intro_facts', cs: 'section_walk-scene', 'cs-st': 'walk-scene_sticky',
+  sky: 'walk-scene_sky', s0: 'walk-scene_sky-0', s1: 'walk-scene_sky-1', s2: 'walk-scene_sky-2', s3: 'walk-scene_sky-3',
+  'cs-stars': 'walk-scene_stars', moon: 'walk-scene_moon', sun: 'walk-scene_sun', land: 'walk-scene_land',
+  lights: 'walk-scene_lights', lamps: 'walk-scene_lamps', walker: 'walk-scene_walker', fog: 'walk-scene_fog',
+  'cap-s': 'walk-scene_captions', hud: 'walk-scene_hud', clk: 'walk-scene_clock', prg: 'walk-scene_progress',
+  bar: 'walk-scene_bar', tk: 'walk-scene_ticks', km: 'walk-scene_km',
+  cinfo: 'section_walk-info', 'cinfo-l': 'walk-info_intro', chist: 'section_walk-history',
+  'chist-t': 'walk-history_title', 'chist-p': 'walk-history_picture', 'chist-c': 'walk-history_caption',
+  // agenda
+  'ag-m': 'agenda-header_meta', 'ag-nx': 'agenda-next_component', 'ag-nx-t': 'agenda-next_title',
+  'ag-nx-d': 'agenda-next_date', ag: 'section_agenda', 'ag-g': 'agenda_grid', 'ag-s': 'agenda_sticky',
+  'ag-sp': 'agenda_note', 'ag-l': 'agenda_list-wrap', 'ag-v': 'agenda_line', 'ag-ls': 'agenda_list',
+  'ag-i': 'agenda_item', 'ag-d': 'agenda_dot', 'ag-tx': 'agenda_text', 'ag-dt': 'agenda_date',
+  'ag-ds': 'agenda_description', 'ag-n': 'agenda_small-note',
+  // contactos
+  kc: 'contact_grid', 'kc-i': 'contact_item', copy: 'contact_copy', mp: 'contact-map_component',
+  'mp-svg': 'contact-map_svg', 'mp-pt': 'contact-map_outline', 'mp-c': 'contact-map_city', 'mp-l': 'contact-map_route',
+  'mp-a': 'contact-map_pin', 'mp-r': 'contact-map_ring', 'mp-d': 'contact-map_dot', 'mp-n': 'contact-map_name',
+  'mp-f': 'contact-map_footer', 'mp-co': 'contact-map_coords', 'mem-x': 'form_memory-extra', lab: 'form_label',
+  drop: 'form_dropzone', thumbs: 'form_thumbs', 'fm-s': 'form_submit', sent: 'form_sent', 'fm-n': 'form_note',
+  // em memória
+  gx: 'section_memory-hero', 'gx-star': 'memory-hero_star', 'gx-in': 'memory-hero_content', 'gx-s': 'memory-hero_subtitle',
+  gq: 'memory-quote_component', 'gq-e': 'memory-quote_author', gm: 'memory-details_component',
+  'gm-l': 'memory-details_left', 'gm-r': 'memory-details_right', gphoto: 'memory-details_photo',
+  // documentos
+  dc: 'documents_group', 'dc-h': 'documents_heading', 'dc-l': 'documents_list', 'dc-t': 'documents_title',
+  'dc-s': 'documents_status', 'dc-n': 'documents_note',
+  // privacidade, cookies
+  lg1: 'section_legal-header', lgl: 'legal_grid', 'lgl-n': 'legal_nav', 'lgl-b': 'legal_body', 'lgl-x': 'legal_note',
+  tbl: 'legal_table',
 };
 
 const CTX = [
@@ -81,6 +128,11 @@ const CTX = [
   ['q', 'rs-c', 'home-rostos_quote'], ['n', 'rs-b', 'is-next'], ['now', 'tag', 'is-now'],
   ['st', 'dw-h', 'drawer_step-count'], ['sub', 'stp', 'drawer_step-intro'],
   ['full', 'fl', 'is-full'], ['full', 'fm', 'is-full'], ['dob', 'fl', 'is-date'],
+  ['q', 'ch', 'is-quote'], ['k', 'cap-s', 'walk-scene_kicker'], ['v', 'ci', 'walk-intro_highlight'],
+  ['tx', 'chist', 'walk-history_text'], ['s', 'mp-svg', 'contact-map_small'], ['b', 'mp-a', 'is-inner'],
+  ['lock', 'dc-l', 'is-locked'], ['lock', 'dc', 'is-locked'], ['sm', 'kc-i', 'is-small'],
+  ['al', 'rec-m', 'rostos-library_alias'], ['alc', 'ah', 'rosto_header-alias'], ['col', 'ab', 'rosto_column'],
+  ['q', 'ab', 'rosto_quote'], ['cr', 'ab', 'rosto_credit'],
 ];
 
 const ADD = [
@@ -95,6 +147,9 @@ const ADD = [
   ['.tr-v i', 'home-trail_line-fill'], ['.tr-v b', 'home-trail_line-lamp'], ['.tr-t h3', 'home-trail_heading'],
   ['.tr-t p', 'home-trail_paragraph'], ['.nt-tx p', 'home-night_paragraph'],
   ['.yr-i a', 'home-year_link'], ['.yr .tt b', 'home-year_title'],
+  ['.rec .ph', 'rostos-library_image-wrap'], ['.rec img', 'rostos-library_image'], ['.rec-m b', 'rostos-library_name'],
+  ['.ah h1', 'rosto_title'], ['.ap figure', 'rosto_figure'], ['.ap figcaption', 'rosto_caption'], ['.ap .ph', 'rosto_image-wrap'],
+  ['.rnx-t .d1', 'rosto-next_title'], ['.rnx-i img', 'rosto-next_img'],
   ['.rs-c img', 'home-rostos_image'], ['.rs-m b', 'home-rostos_name'], ['.rs-m span', 'home-rostos_role'],
   ['.ms-star i', 'home-memory_star-dot'], ['.ms-l b', 'home-memory_name'], ['.ms-l span', 'home-memory_role'],
   ['.ms-l a', 'home-memory_link'],
@@ -107,6 +162,7 @@ const ADD = [
   ['.card-b p', 'member-card_back-text'],
   ['.ph>img', 'image-cover'],
   ['section[aria-labelledby=h-yr]', 'section_home-year'],
+  ['.mp-f p', 'contact-map_text'],
 ];
 
 const RAW = [
@@ -119,13 +175,14 @@ const RAW = [
   ['.yr .yr-i a:hover', '.yr .home-year_link:hover'],
   // these two would otherwise tie with a class of the element they reach
   ['.ft>*', ':where(.ft)>*'], ['.ln>*', ':where(.ln)>*'],
+  ['.ab .lede', '.ab-l'], ['.lock .dc-s', '.is-locked .dc-s'],
 ];
 
 // elements whose tag changes so Webflow keeps them as plain elements
 const TAGS = {
   'button_dot': 'span', 'nav_burger-line': 'span', 'loader_digit-strip': 'span', 'home-hero_tag-line': 'span',
   'home-hero_hint-dot': 'span', 'home-trail_line-fill': 'span', 'home-trail_line-lamp': 'span',
-  'home-trail_dot': 'span', 'home-year_title': 'span', 'home-rostos_name': 'div', 'home-memory_star-dot': 'span',
+  'home-trail_dot': 'span', 'home-year_title': 'span', 'home-rostos_name': 'div', 'rostos-library_name': 'div', 'home-memory_star-dot': 'span',
   'home-memory_name': 'span', 'join_price': 'span', 'member-card_number-label': 'span', 'member-card_name': 'span',
 };
 
@@ -139,6 +196,10 @@ const HREF = {
   'agenda.html': '/agenda', 'contactos.html': '/contactos', 'graca.html': '/em-memoria',
   'documentos.html': '/documentos', 'privacidade.html': '/privacidade', 'cookies.html': '/cookies',
 };
+/* Webflow page slug -> prototype file */
+const PAGES = { home: 'index.html', sobre: 'sobre.html', rostos: 'rostos.html', rosto: 'rosto.html', caminhada: 'caminhada.html',
+  agenda: 'agenda.html', contactos: 'contactos.html', 'em-memoria': 'graca.html', documentos: 'documentos.html',
+  privacidade: 'privacidade.html', cookies: 'cookies.html' };
 
 /* the design's short tokens read Webflow's variables, so a change in the Variables panel reaches everything */
 const ALIAS = {
@@ -195,4 +256,14 @@ const THEMED = {
   '.text-size-large': { 'font-size': '--_typography---size--large' }, '.text-style-label': { 'font-size': '--_typography---size--label' },
 };
 
-module.exports = { WFVARS, THEMED, ALIAS, G, CTX, ADD, RAW, TAGS, UNIQUE, THEME, HREF };
+/* parts that go to Webflow as HTML embeds: SVG scenes, the custom-coded form, tables.
+   [selector, name, 'inner' when the parent itself is the holder] */
+const EMBEDS = {
+  contactos: [['.contact-map_svg', 'contact-map'], ['form.form_grid', 'contact-form']],
+  caminhada: [['.walk-scene_land', 'walk-land']],
+  privacidade: [['.legal_table > table', 'privacy-table', 'inner']],
+  cookies: [['.legal_table > table', 'cookies-table', 'inner']],
+};
+/* sections that repeat and live as one Webflow component: [page, selector, component name] */
+const SHARED = [['sobre', '.section_join', 'Section / Join']];
+module.exports = { EMBEDS, SHARED, PAGES, WFVARS, THEMED, ALIAS, G, CTX, ADD, RAW, TAGS, UNIQUE, THEME, HREF };

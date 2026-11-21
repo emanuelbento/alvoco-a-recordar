@@ -8,41 +8,7 @@
    pin, so scroll positions never depend on measured spacers.
    ========================================================= */
 (() => {
-const ROSTOS = [
-  {s:'tia-maria', n:'Maria Lopes Marques', a:'Tia Maria', age:'83 anos', credit:'Fotografia de Alfredo Morais',
-   lede:'Com certeza que a conhecem como Maria Braga, por ter casado com o José Braga.',
-   body:['Uma mulher de riso fácil, de boa convivência, e queijeira de profissão.', 'Este registo foi publicado no dia em que fez 83 anos. Fica aqui para os anos todos que ainda vêm.'],
-   quote:'Parabéns, Tia Maria!'},
-  {s:'conceicao-pimentel', n:'Conceição Lopes Pimentel', a:'São Pimentel', age:'70 anos',
-   lede:'Nasceu numa família de seis irmãos, e cedo se habituou ao trabalho.',
-   body:['Ainda nova foi trabalhar para um restaurante, onde como ajudante de cozinha aprendeu muito do que hoje põe nos seus cozinhados. Quem não a conhece dos almoços servidos pelas associações da nossa terra?', 'Mulher de convicções fortes, e fazedora de bons coscoréis.'],
-   quote:'Ele é ver os gulosos a correr às Feirinhas para não ficarem sem eles!'},
-  {s:'jose-lobo', n:'José Garcia Lobo', a:'Zé Caiador',
-   lede:'Nascido na vizinha Moita, mas criado em Aldeia das Dez, cedo se apaixonou por Alvoco das Várzeas, ou melhor, por uma moça. Aqui casou e formou família.',
-   body:['Quem nasceu ou foi criado no Povo conhece-o como Zé Caiador, nome que ganhou pela profissão de pintor de construção civil.', 'Quem o quisesse encontrar podia procurá-lo na quinta da Vessada, sempre acompanhado pelos sons do seu rádio, que concorriam com o chilrear dos pássaros e o som da água no açude da Moenda.', 'Já não está entre nós. Será sempre lembrado como um grande homem e amigo de todos.'],
-   quote:'Alvoco é hoje um lugar melhor porque ele existiu.'},
-  {s:'nascimento-andrade', n:'Maria do Nascimento Andrade', a:'Maria do Mário', age:'94 anos',
-   lede:'Mais conhecida por Maria do Mário, por ter casado com o senhor Mário.',
-   body:['Costureira, fazia tanto uma bata de trabalho como um vestido de noiva.', 'Já viúva, explorou com a sogra um dos cafés de Alvoco das Várzeas, que naquele tempo não era o único.'],
-   quote:'Quem se lembra da bela laranjada que ali se vendia?'},
-  {s:'irene-tavares', n:'Irene Tavares', a:'Gémea da Soledade', age:'91 anos',
-   lede:'Se hoje nascerem gémeos é uma preocupação, imaginemos há quase um século.',
-   body:['Quando o leite da mãe não chegava para as duas, valeu o leite da cabrita. E que bem cresceram.'],
-   quote:'Sem roupas iguais, mas sempre unidas. Vivências diferentes, mas sempre amigas.'},
-  {s:'soledade-tavares', n:'Soledade Tavares', a:'Gémea da Irene', age:'91 anos',
-   lede:'A outra metade de uma história que começou há quase um século, com duas bebés e o leite de uma cabrita.',
-   body:['A Soledade e a Irene cresceram juntas em Alvoco das Várzeas, cada uma com a sua vida.'],
-   quote:'Vivências diferentes, mas sempre amigas.'},
-  {s:'acacio-mendes', n:'Acácio Mendes',
-   lede:'Há quem guarde a história de uma aldeia em livros. O Sr. Acácio guarda-a nas cantigas.',
-   body:['Em agosto de 2025, no almoço do terceiro aniversário da associação, juntámo-nos para lhe agradecer. A sua dedicação tem mantido viva a história que se canta e se passa de geração em geração.'],
-   quote:'A música também é memória.'},
-  {s:'maria-ferreira', n:'Maria Ferreira'},
-  {s:'judite-lobo', n:'Judite Lobo'}
-];
-const img = s => 'assets/img/' + s + '.webp';
 const first = n => n.split(' ')[0];
-const sub = r => r.a ? r.a + (r.age ? ', ' + r.age : '') : r.lede ? 'Alvoco das Várzeas' : 'Registo por escrever';
 const $ = (s, c = document) => c.querySelector(s);
 const $$ = (s, c = document) => [...c.querySelectorAll(s)];
 const store = k => ({ get(n){ try { return window[k].getItem(n) } catch(e){ return null } }, set(n,v){ try { window[k].setItem(n,v) } catch(e){} }, del(n){ try { window[k].removeItem(n) } catch(e){} } });
@@ -332,8 +298,8 @@ function liveForm(form){
   });
 }
 function dropzone(scope){
-  const dz = $('.drop', scope); if (!dz) return;
-  const inp = $('input', dz), th = $('.thumbs', scope);
+  const dz = $('.form_dropzone', scope); if (!dz) return;
+  const inp = $('input', dz), th = $('.form_thumbs', scope);
   const show = fs => [...fs].filter(f => f.type.startsWith('image/')).slice(0, 12).forEach((f, i) => { const fg = document.createElement('figure'); fg.innerHTML = `<img src="${URL.createObjectURL(f)}" alt="">`; th.appendChild(fg);
     gsap.fromTo(fg, { y: -30, rotation: gsap.utils.random(-18, 18), opacity: 0 }, { y: 0, rotation: gsap.utils.random(-4, 4), opacity: 1, duration: .8, ease: 'out', delay: i * .05 }); });
   ['dragenter', 'dragover'].forEach(v => dz.addEventListener(v, e => { e.preventDefault(); dz.classList.add('over'); }));
@@ -533,47 +499,50 @@ function home(m, firstLoad){
 /* ================= OTHER PAGES ================= */
 function sobre(m){
   if (RM || matchMedia('(max-height: 640px)').matches) return;
-  const chs = $$('.ch', m);
-  chs.forEach((c, i) => { if (i < chs.length - 1) gsap.to($('.ch-in', c), { scale: .94, opacity: .2, ease: 'none', scrollTrigger: { trigger: chs[i + 1], start: 'top bottom', end: 'top top', scrub: true } }); });
+  const chs = $$('.chapter_component', m);
+  chs.forEach((c, i) => { if (i < chs.length - 1) gsap.to($('.chapter_inner', c), { scale: .94, opacity: .2, ease: 'none', scrollTrigger: { trigger: chs[i + 1], start: 'top bottom', end: 'top top', scrub: true } }); });
 }
-const recHTML = r => `<a class="rec" href="rosto.html#${r.s}" data-pt="${first(r.n)}" data-img="${img(r.s)}"><div class="image-wrapper"><img src="${img(r.s)}" alt="Retrato de ${r.n}" loading="lazy" width="1600" height="1067"></div><div class="rec-m"><b>${r.n}</b><span class="al">${sub(r)}</span></div></a>`;
 function rostos(m){
-  const sh = $('.shelf', m); sh.innerHTML = ROSTOS.map(recHTML).join('');
-  $('.lib-n', m).textContent = ROSTOS.length + ' rostos';
-  const btns = $$('.tog button', m), mark = v => btns.forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v));
+  const sh = $('.rostos-library_shelf', m), recs = $$('.rostos-library_card', sh);
+  recs.forEach(c => { const ne = $('.rostos-library_name', c), ae = $('.rostos-library_alias', c), n = ne.textContent.trim(), a = ae.textContent.trim(), age = c.dataset.idade, im = $('img', c);
+    c.dataset.pt = first(n); if (c.dataset.slug) c.setAttribute('href', '/rosto/' + c.dataset.slug);
+    if (im) { c.dataset.img = im.currentSrc || im.src; if (!im.alt) im.alt = 'Retrato de ' + n; }
+    ae.classList.remove('w-dyn-bind-empty'); ae.textContent = a ? a + (age ? ', ' + age : '') : c.dataset.escrito ? 'Alvoco das Várzeas' : 'Registo por escrever'; });
+  $('.rostos-library_count', m).textContent = recs.length + ' rostos';
+  const btns = $$('.rostos-library_toggle button', m), mark = v => btns.forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v));
   const set = (v, anim) => { mark(v); const list = v === 'list'; ls.set('alv-vista', v);
     if (!anim || RM) { sh.classList.toggle('is-list', list); ScrollTrigger.refresh(); return; }
-    const state = Flip.getState($$('.rec .image-wrapper', sh)); sh.classList.toggle('is-list', list);
-    gsap.fromTo($$('.rec-m', sh), { opacity: 0 }, { opacity: 1, duration: .5, delay: .3, stagger: .02 });
+    const state = Flip.getState($$('.rostos-library_image-wrap', sh)); sh.classList.toggle('is-list', list);
+    gsap.fromTo($$('.rostos-library_meta', sh), { opacity: 0 }, { opacity: 1, duration: .5, delay: .3, stagger: .02 });
     Flip.from(state, { duration: .85, ease: 'io', stagger: .02, scale: true, onComplete: () => ScrollTrigger.refresh() }); };
   btns.forEach(b => on(b, 'click', () => { if (b.getAttribute('aria-pressed') !== 'true') set(b.dataset.v, true); }));
   if (ls.get('alv-vista') === 'list') set('list', false);
-  if (!RM) { gsap.set($$('.rec', sh), { opacity: 0, y: 44 }); when(sh, () => gsap.to($$('.rec', sh), { opacity: 1, y: 0, duration: 1.1, ease: 'out', stagger: .06, clearProps: 'transform,opacity' }), 'top 98%'); }
+  if (!RM) { gsap.set($$('.rostos-library_card', sh), { opacity: 0, y: 44 }); when(sh, () => gsap.to($$('.rostos-library_card', sh), { opacity: 1, y: 0, duration: 1.1, ease: 'out', stagger: .06, clearProps: 'transform,opacity' }), 'top 98%'); }
   follower(sh, () => sh.classList.contains('is-list'));
 }
 function rosto(m){
-  let i = ROSTOS.findIndex(r => r.s === decodeURIComponent(location.hash.slice(1))); if (i < 0) i = 0;
-  const r = ROSTOS[i], nx = ROSTOS[(i + 1) % ROSTOS.length], f = first(r.n);
-  document.title = r.n + ', Rostos Alvocenses';
-  $('#artigo', m).innerHTML = `
-  <section class="ah padding-global">
-    <div class="ah-m" data-r="fade"><span>Rostos Alvocenses</span><a class="link-underline" href="rostos.html">Voltar a todos os rostos</a></div>
-    <h1 class="heading-style-h1" data-r="lines">${r.n}</h1>${r.a || r.age ? `<span class="alc" data-r="fade">${[r.a, r.age ? r.age + ' à data do registo' : ''].filter(Boolean).join(', ')}</span>` : ''}
-  </section>
-  <section class="ap padding-global"><figure><div class="image-wrapper" data-r="img"><img src="${img(r.s)}" alt="Retrato de ${r.n}" width="1600" height="1067"></div><figcaption><span>${r.n}, Alvoco das Várzeas</span><span>${r.credit || 'Fotografia de Emanuel Bento'}</span></figcaption></figure></section>
-  <section class="ab padding-global padding-section-large"><div class="layout-grid">
-    ${r.lede ? `<p class="lede big" data-r="words">${r.lede}</p><div class="col prose" data-r="fade">${r.body.map(p => `<p>${p}</p>`).join('')}</div><blockquote class="q" data-r="lines">${r.quote}</blockquote>`
-    : `<p class="lede big" data-r="words">O registo de ${f} ainda está por escrever.</p><div class="col prose" data-r="fade"><p>Conheces a história de ${f}? Uma alcunha, um ofício, uma casa, uma tarde que ficou. Conta-nos e ajudas a completar este registo.</p><p><a class="btn ol" href="contactos.html#memoria">Contar uma memória</a></p></div>`}
-    <p class="cr" data-r="fade">Rostos Alvocenses é uma série de Emanuel Bento, iniciada em 2018 e continuada com a Associação Alvôco a Recordar.</p>
-  </div></section>
-  <a class="nx" href="rosto.html#${nx.s}" data-pt="${first(nx.n)}" data-tema="claro"><div class="nx-i" aria-hidden="true"><img src="${img(nx.s)}" alt="" loading="lazy"></div><div class="nx-t padding-global"><span class="text-style-label">A seguir</span><b class="heading-style-h1">${nx.n}</b></div></a>`;
+  const slug = decodeURIComponent(location.pathname.replace(/\/+$/, '').split('/').pop());
+  const n = $('.rosto_title', m).textContent.trim(), f = first(n), fill = (e, t) => { e.classList.remove('w-dyn-bind-empty'); e.textContent = t; };
+  const al = $('.rosto_header-alias', m), alias = [al.textContent.trim(), al.dataset.idade ? al.dataset.idade + ' à data do registo' : ''].filter(Boolean).join(', ');
+  if (alias) fill(al, alias); else al.remove();
+  fill($('.rosto_caption-name', m), n + ', Alvoco das Várzeas');
+  const cr = $('.rosto_caption-credit', m); if (!cr.textContent.trim()) fill(cr, 'Fotografia de Emanuel Bento');
+  const im = $('.rosto_image-wrap img', m); if (im && !im.alt) im.alt = 'Retrato de ' + n;
+  const ld = $('.rosto_lede', m), col = $('.rosto_column', m), q = $('.rosto_quote', m);
+  if (!ld.textContent.trim()) { fill(ld, 'O registo de ' + f + ' ainda está por escrever.'); col.classList.remove('w-dyn-bind-empty');
+    col.innerHTML = '<p>Conheces a história de ' + f + '? Uma alcunha, um ofício, uma casa, uma tarde que ficou. Conta-nos e ajudas a completar este registo.</p><p><a class="button is-outline" href="/contactos#memoria">Contar uma memória</a></p>'; }
+  if (!q.textContent.trim()) q.remove();
+  /* the collection list holds every face: only the one after this page stays */
+  const its = $$('.rosto-next_item', m), at = its.findIndex(x => $('.rosto-next_component', x).dataset.slug === slug), nx = its[(at + 1) % its.length];
+  its.forEach(x => { if (x !== nx) x.remove(); });
+  if (nx) { const a = $('.rosto-next_component', nx); a.setAttribute('href', '/rosto/' + a.dataset.slug); a.dataset.pt = first($('.rosto-next_title', a).textContent.trim()); }
   dots(m);
-  if (!RM) gsap.fromTo($('.nx-i img', m), { scale: 1.25 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: $('.nx', m), start: 'top bottom', end: 'bottom bottom', scrub: true } });
+  if (!RM && nx) gsap.fromTo($('.rosto-next_image img', nx), { scale: 1.25 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: nx, start: 'top bottom', end: 'bottom bottom', scrub: true } });
 }
 function caminhada(m){
-  stars($('.cs-stars', m), 320, true);
-  const sc = $('.cs', m), st = $('.cs-st', m), sun = $('.sun', m), sm = $('#summit', m), trail_ = $('#trail', m);
-  const clk = $('.clk', m), km = $('.km b', m), bar = $('.prg .bar i', m), tks = $$('.prg .tk span', m), caps = $$('.cap-s>div', m);
+  stars($('.walk-scene_stars', m), 320, true);
+  const sc = $('.section_walk-scene', m), st = $('.walk-scene_sticky', m), sun = $('.walk-scene_sun', m), sm = $('#summit', m), trail_ = $('#trail', m);
+  const clk = $('.walk-scene_clock', m), km = $('.walk-scene_km b', m), bar = $('.walk-scene_progress .walk-scene_bar i', m), tks = $$('.walk-scene_progress .walk-scene_ticks span', m), caps = $$('.walk-scene_captions>div', m);
   const q = s => $$(s, m);
   const placeSun = p => { const r = sm.getBoundingClientRect(), s = st.getBoundingClientRect(), z = sun.offsetWidth; gsap.set(sun, { x: r.left - s.left - z / 2, y: r.top - s.top - z / 2 + (1 - p) * z * 1.15 }); };
   const S = { t: 0 }, sunP = { p: 0 };
@@ -581,13 +550,13 @@ function caminhada(m){
     const d = gsap.utils.clamp(0, 1, (p - .02) / .9); km.textContent = (d * 9).toFixed(1).replace('.', ','); gsap.set(bar, { scaleX: d }); tks.forEach((t, i) => t.classList.toggle('on', d >= [0, .5, .99][i])); };
   const tl = gsap.timeline({ defaults: { ease: 'none' }, onUpdate: upd });
   tl.to(S, { t: 1, duration: 1 }, 0).fromTo(trail_, { drawSVG: '0%' }, { drawSVG: '100%', duration: .9 }, .02);
-  q('.walker').forEach((w, i) => tl.set(w, { opacity: 1 }, .02 + i * .014).to(w, { motionPath: { path: trail_, align: trail_, alignOrigin: [.5, .5] }, duration: .9 }, .02 + i * .014));
-  tl.to(q('.sky .s1'), { opacity: 1, duration: .2 }, .3).to(q('.sky .s2'), { opacity: 1, duration: .22 }, .52).to(q('.sky .s3'), { opacity: 1, duration: .14 }, .84)
-    .to(q('.cs-stars'), { opacity: 0, duration: .3 }, .4).to(q('.moon'), { y: '42vh', opacity: 0, duration: .5 }, .2).to(q('.lights'), { opacity: 0, duration: .2 }, .55).to(q('.lamps'), { opacity: 0, duration: .08 }, .92);
+  q('.walk-scene_walker').forEach((w, i) => tl.set(w, { opacity: 1 }, .02 + i * .014).to(w, { motionPath: { path: trail_, align: trail_, alignOrigin: [.5, .5] }, duration: .9 }, .02 + i * .014));
+  tl.to(q('.walk-scene_sky .walk-scene_sky-1'), { opacity: 1, duration: .2 }, .3).to(q('.walk-scene_sky .walk-scene_sky-2'), { opacity: 1, duration: .22 }, .52).to(q('.walk-scene_sky .walk-scene_sky-3'), { opacity: 1, duration: .14 }, .84)
+    .to(q('.walk-scene_stars'), { opacity: 0, duration: .3 }, .4).to(q('.walk-scene_moon'), { y: '42vh', opacity: 0, duration: .5 }, .2).to(q('.walk-scene_lights'), { opacity: 0, duration: .2 }, .55).to(q('.walk-scene_lamps'), { opacity: 0, duration: .08 }, .92);
   [['#r4', '#8e8b98', '#a8b5bf'], ['#r3', '#6a6972', '#7e8e8e'], ['#r2', '#4a4a47', '#566550'], ['#r1', '#2b2d27', '#3d4c36'], ['#r0', '#151a14', '#253120']]
     .forEach(([id, a, b]) => tl.to(q(id), { attr: { fill: a }, duration: .3 }, .5).to(q(id), { attr: { fill: b }, duration: .15 }, .85));
-  tl.to(q('.fog'), { opacity: .85, duration: .2, stagger: .05 }, .68).to(q('.fog'), { xPercent: 5, duration: .32 }, .68)
-    .to(sun, { opacity: 1, duration: .1 }, .7).to(sunP, { p: 1, duration: .24, onUpdate: () => placeSun(sunP.p) }, .7).to(q('.cap-s'), { color: '#14201a', duration: .04 }, .835);
+  tl.to(q('.walk-scene_fog'), { opacity: .85, duration: .2, stagger: .05 }, .68).to(q('.walk-scene_fog'), { xPercent: 5, duration: .32 }, .68)
+    .to(sun, { opacity: 1, duration: .1 }, .7).to(sunP, { p: 1, duration: .24, onUpdate: () => placeSun(sunP.p) }, .7).to(q('.walk-scene_captions'), { color: '#14201a', duration: .04 }, .835);
   caps.forEach((c, i) => { if (!i) tl.set(c, { opacity: 1 }, 0); else tl.fromTo(c, { opacity: 0, y: 36 }, { opacity: 1, y: 0, duration: .05 }, [0, .26, .5, .76][i]);
     if (i < caps.length - 1) tl.to(c, { opacity: 0, y: -28, duration: .05 }, [.2, .44, .7][i]); });
   placeSun(0);
@@ -597,15 +566,15 @@ function caminhada(m){
   on(window, 'resize', () => placeSun(sunP.p));
 }
 function agenda(m){
-  const ls = $('.ag-ls', m), lw = $('.ag-l', m), v = $('.ag-v', m), now = new Date(), mo = now.getMonth(), yr = now.getFullYear();
+  const ls = $('.agenda_list', m), lw = $('.agenda_list-wrap', m), v = $('.agenda_line', m), now = new Date(), mo = now.getMonth(), yr = now.getFullYear();
   // only what is still to come: this year's remaining dates first, then next year's
-  const all = $$('.ag-i', m), ord = [...all.filter(i => +i.dataset.mo > mo), ...all.filter(i => +i.dataset.mo <= mo)];
-  ord.forEach(i => { const y = +i.dataset.mo > mo ? yr : yr + 1, sp = $('.ag-dt span', i); i.dataset.y = y; sp.textContent = sp.textContent.replace(/ de \d{4}$/, '') + ' de ' + y; ls.appendChild(i); });
+  const all = $$('.agenda_item', m), ord = [...all.filter(i => +i.dataset.mo > mo), ...all.filter(i => +i.dataset.mo <= mo)];
+  ord.forEach(i => { const y = +i.dataset.mo > mo ? yr : yr + 1, sp = $('.agenda_date span', i); i.dataset.y = y; sp.textContent = sp.textContent.replace(/ de \d{4}$/, '') + ' de ' + y; ls.appendChild(i); });
   const nx = ord[0]; nx.classList.add('nx');
   let left = 'Data a anunciar';
   if (nx.dataset.day) { const d = Math.ceil((new Date(+nx.dataset.y, +nx.dataset.mo, +nx.dataset.day) - now) / 864e5); left = d > 1 ? 'Faltam ' + d + ' dias' : d === 1 ? 'Falta 1 dia' : 'É hoje'; }
-  $('.ag-nx-t', m).textContent = $('h3', nx).textContent;
-  $('.ag-nx-d', m).textContent = $('.ag-dt span', nx).textContent + '. ' + left + '.';
+  $('.agenda-next_title', m).textContent = $('h3', nx).textContent;
+  $('.agenda-next_date', m).textContent = $('.agenda_date span', nx).textContent + '. ' + left + '.';
   const lit = p => { const h = lw.offsetHeight; ord.forEach((i, k) => i.classList.toggle('on', !k || i.offsetTop + 14 <= p * h)); };
   if (RM) { v.style.setProperty('--p', 1); lit(2); return; }
   const o = { p: 0 }; lit(0);
@@ -613,22 +582,22 @@ function agenda(m){
 }
 function contactos(m){
   const map = { caminhada: 'Caminhada Noturna', socios: 'Sócios e quotas', memoria: 'Partilhar uma memória' };
-  const f = $('#form', m), ok = $('.sent', f), mx = $('.mem-x', f), radios = $$('input[name=assunto]', f);
+  const f = $('#form', m), ok = $('.form_sent', f), mx = $('.form_memory-extra', f), radios = $$('input[name=assunto]', f);
   const sync = () => { const v = (radios.find(r => r.checked) || {}).value, show = v === 'Partilhar uma memória'; if (mx.hidden === !show) return; mx.hidden = !show;
     if (show && !RM) gsap.from(mx, { opacity: 0, y: 16, duration: .6, ease: 'out', clearProps: 'transform,opacity' }); ScrollTrigger.refresh(); };
   const pick = () => { const v = map[location.hash.slice(1)]; if (v) { const r = radios.find(i => i.value === v); if (r) r.checked = true; } sync(); };
   pick(); on(window, 'hashchange', pick); radios.forEach(r => on(r, 'change', sync));
-  const cp = $('.copy', m);
+  const cp = $('.contact_copy', m);
   cp && on(cp, 'click', () => { const o = cp.textContent, done = k => { cp.textContent = k ? 'Email copiado' : 'Seleciona o email e copia'; setTimeout(() => { cp.textContent = o; }, 2200); };
     navigator.clipboard ? navigator.clipboard.writeText(cp.dataset.copy).then(() => done(true), () => done(false)) : done(false); });
   liveForm(f); dropzone(f);
   on(f, 'submit', e => { e.preventDefault(); const bad = $$('.form_field', f).filter(fl => !validate(fl, f)); if (bad.length) { $('input,textarea', bad[0]).focus(); ok.textContent = ''; return; }
-    ok.textContent = 'Mensagem enviada. Respondemos por email.'; f.reset(); $$('.form_field', f).forEach(fl => fl.classList.remove('ok')); $('.thumbs', f).innerHTML = ''; pick(); });
-  const mp = $('.mp', m);
-  if (mp && !RM) { const outl = $('.mp-pt', mp), ls_ = $$('.mp-l', mp), cs = $$('.mp-c circle, .mp-c text, .mp-n, .mp-a', mp);
+    ok.textContent = 'Mensagem enviada. Respondemos por email.'; f.reset(); $$('.form_field', f).forEach(fl => fl.classList.remove('ok')); $('.form_thumbs', f).innerHTML = ''; pick(); });
+  const mp = $('.contact-map_component', m);
+  if (mp && !RM) { const outl = $('.contact-map_outline', mp), ls_ = $$('.contact-map_route', mp), cs = $$('.contact-map_city circle, .contact-map_city text, .contact-map_name, .contact-map_pin', mp);
     gsap.set(outl, { drawSVG: '0%' }); gsap.set(ls_, { drawSVG: '0%' }); gsap.set(cs, { opacity: 0 });
-    when(mp, () => gsap.timeline().to(outl, { drawSVG: '100%', duration: 2.2, ease: 'power2.inOut' }, .2).to($$('.mp-a, .mp-n', mp), { opacity: 1, duration: .8 }, 1.3)
-      .to(ls_, { drawSVG: '100%', duration: 1, stagger: .12, ease: 'power2.out' }, 1.6).to($$('.mp-c circle, .mp-c text', mp), { opacity: 1, duration: .6, stagger: .06 }, 2)); }
+    when(mp, () => gsap.timeline().to(outl, { drawSVG: '100%', duration: 2.2, ease: 'power2.inOut' }, .2).to($$('.contact-map_pin, .contact-map_name', mp), { opacity: 1, duration: .8 }, 1.3)
+      .to(ls_, { drawSVG: '100%', duration: 1, stagger: .12, ease: 'power2.out' }, 1.6).to($$('.contact-map_city circle, .contact-map_city text', mp), { opacity: 1, duration: .6, stagger: .06 }, 2)); }
 }
 function graca(m){ stars($('.stars-canvas', m), 260, true); }
 
