@@ -500,8 +500,10 @@ function night(m){
 function strip(m){
   const row = $('.home-rostos_row', m); if (!row) return;
   $$('.home-rostos_card', row).forEach(c => { const ne = $('.home-rostos_name', c), re = $('.home-rostos_role', c), n = ne.textContent.trim(), a = re.textContent.trim(), age = c.dataset.idade, tw = /^Gémea/.test(a);
-    c.dataset.pt = first(n); c.draggable = false; const im = $('img', c); if (im) im.draggable = false;
+    c.dataset.pt = first(n); if (c.dataset.slug) c.setAttribute('href', '/rosto/' + c.dataset.slug); c.draggable = false; const im = $('img', c); if (im) im.draggable = false;
+    re.classList.remove('w-dyn-bind-empty');
     if (a && !tw) { ne.textContent = a; re.textContent = n + (age ? ', ' + age : ''); } else re.textContent = a ? a + (age ? ', ' + age : '') : 'Alvoco das Várzeas'; });
+  if (!$('.home-rostos_card', row)) return;
   let down = false, sx = 0, sl = 0, moved = 0, vx = 0, lx = 0, lt = 0;
   on(row, 'pointerdown', e => { if (e.pointerType !== 'mouse' || e.button) return; down = true; sx = lx = e.clientX; sl = row.scrollLeft; moved = 0; vx = 0; lt = performance.now(); gsap.killTweensOf(row); });
   on(window, 'pointermove', e => { if (!down) return; const dx = e.clientX - sx; moved = Math.max(moved, Math.abs(dx)); if (moved > 5) row.classList.add('drag'); row.scrollLeft = sl - dx;

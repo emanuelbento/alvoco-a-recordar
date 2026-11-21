@@ -106,6 +106,7 @@ const ADD = [
   ['.card-f .nm span', 'member-card_place'], ['.card-b svg', 'member-card_back-mark'],
   ['.card-b p', 'member-card_back-text'],
   ['.ph>img', 'image-cover'],
+  ['section[aria-labelledby=h-yr]', 'section_home-year'],
 ];
 
 const RAW = [
@@ -124,7 +125,7 @@ const RAW = [
 const TAGS = {
   'button_dot': 'span', 'nav_burger-line': 'span', 'loader_digit-strip': 'span', 'home-hero_tag-line': 'span',
   'home-hero_hint-dot': 'span', 'home-trail_line-fill': 'span', 'home-trail_line-lamp': 'span',
-  'home-trail_dot': 'span', 'home-year_title': 'span', 'home-rostos_name': 'span', 'home-memory_star-dot': 'span',
+  'home-trail_dot': 'span', 'home-year_title': 'span', 'home-rostos_name': 'div', 'home-memory_star-dot': 'span',
   'home-memory_name': 'span', 'join_price': 'span', 'member-card_number-label': 'span', 'member-card_name': 'span',
 };
 
@@ -154,4 +155,44 @@ const ALIAS = {
   '--s4': '--_sizes---space--4', '--s5': '--_sizes---space--5', '--s6': '--_sizes---space--6',
 };
 
-module.exports = { ALIAS, G, CTX, ADD, RAW, TAGS, UNIQUE, THEME, HREF };
+/* the Webflow variables as created in the site (Variables panel), used to mirror them in the local test page */
+const WFVARS = {
+  '--_base---green--500': '#476949', '--_base---green--700': '#2e4632', '--_base---green--900': '#1b2a1f',
+  '--_base---green--950': '#0c1510', '--_base---green--300': '#9db29b', '--_base---green--200': '#cfd9cb',
+  '--_base---paper--100': '#e9ece4', '--_base---paper--200': '#dfe4d9', '--_base---paper--white': '#f6f8f3',
+  '--_base---light--lantern': '#ffe2a6', '--_base---signal--error': '#9c3a22',
+  '--_theme---background--primary': 'var(--_base---paper--100)', '--_theme---background--secondary': 'var(--_base---paper--200)',
+  '--_theme---background--dark': 'var(--_base---green--900)', '--_theme---background--night': 'var(--_base---green--950)',
+  '--_theme---background--green': 'var(--_base---green--500)', '--_theme---text--primary': 'var(--_base---green--900)',
+  '--_theme---text--secondary': 'color-mix(in srgb, var(--_base---green--900) 66%, transparent)',
+  '--_theme---text--muted': 'color-mix(in srgb, var(--_base---green--900) 44%, transparent)',
+  '--_theme---text--invert': 'var(--_base---paper--white)', '--_theme---text--brand': 'var(--_base---green--500)',
+  '--_theme---border--default': 'color-mix(in srgb, var(--_base---green--900) 14%, transparent)',
+  '--_theme---border--invert': 'color-mix(in srgb, var(--_base---paper--white) 16%, transparent)',
+  '--_theme---accent--lantern': 'var(--_base---light--lantern)',
+  '--_typography---font--heading': '"Exo", "Arial Black", Arial, sans-serif',
+  '--_typography---font--body': '"Instrument Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+  '--_typography---size--h1': 'clamp(3rem, 10.6vw, 12.5rem)', '--_typography---size--h2': 'clamp(2.4rem, 6.2vw, 7.2rem)',
+  '--_typography---size--h3': 'clamp(1.55rem, 2.6vw, 2.9rem)', '--_typography---size--xlarge': 'clamp(26px, 3.3vw, 58px)',
+  '--_typography---size--large': 'clamp(20px, 1.7vw, 29px)', '--_typography---size--body': 'clamp(16px, 1.08vw, 18px)',
+  '--_typography---size--label': '13px',
+  '--_layout---gutter': 'clamp(20px, 3.4vw, 56px)', '--_layout---grid-gap': 'clamp(16px, 1.7vw, 28px)',
+  '--_layout---section-padding': 'clamp(96px, 11vw, 184px)', '--_layout---nav-height': '68px',
+  '--_sizes---space--1': '8px', '--_sizes---space--2': '16px', '--_sizes---space--3': 'clamp(20px, 1.8vw, 28px)',
+  '--_sizes---space--4': 'clamp(28px, 2.8vw, 44px)', '--_sizes---space--5': 'clamp(40px, 4.4vw, 72px)',
+  '--_sizes---space--6': 'clamp(56px, 7vw, 112px)',
+};
+/* utility classes that carry a theme variable instead of a palette one */
+const THEMED = {
+  '.background-color-dark': { 'background-color': '--_theme---background--dark', color: '--_theme---text--invert' },
+  '.background-color-night': { 'background-color': '--_theme---background--night', color: '--_theme---text--invert' },
+  '.background-color-green': { 'background-color': '--_theme---background--green', color: '--_theme---text--invert' },
+  '.background-color-secondary': { 'background-color': '--_theme---background--secondary' },
+  '.background-color-primary': { 'background-color': '--_theme---background--primary', color: '--_theme---text--primary' },
+  '.text-color-green': { color: '--_theme---text--brand' },
+  '.heading-style-h1': { 'font-size': '--_typography---size--h1' }, '.heading-style-h2': { 'font-size': '--_typography---size--h2' },
+  '.heading-style-h3': { 'font-size': '--_typography---size--h3' }, '.text-size-xlarge': { 'font-size': '--_typography---size--xlarge' },
+  '.text-size-large': { 'font-size': '--_typography---size--large' }, '.text-style-label': { 'font-size': '--_typography---size--label' },
+};
+
+module.exports = { WFVARS, THEMED, ALIAS, G, CTX, ADD, RAW, TAGS, UNIQUE, THEME, HREF };

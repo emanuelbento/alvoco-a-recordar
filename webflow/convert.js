@@ -51,6 +51,7 @@ function nativeDecls(decls) {
   const out = [];
   for (const [p, v] of decls) {
     if (p.startsWith('--') || p.startsWith('-webkit-') || p.startsWith('-moz-')) continue;
+    if (p === 'font' && /^(inherit|initial|unset)$/.test(v)) { for (const q of ['font-family', 'font-size', 'font-weight', 'line-height']) out.push([q, v]); continue; }
     if (p === 'font') { const t = splitTop(v.replace(/\s*\/\s*/, '/'), ' '); let i = 0;
       if (/^(\d{3}|bold|normal)$/.test(t[0])) out.push(['font-weight', t[i++]]);
       const sz = t[i++]; let d = 0, cut = -1; for (let k = 0; k < sz.length; k++) { if (sz[k] === '(') d++; if (sz[k] === ')') d--; if (sz[k] === '/' && !d) cut = k; }
@@ -63,6 +64,9 @@ function nativeDecls(decls) {
     if (p === 'border-block') { out.push(['border-top', v], ['border-bottom', v]); continue; }
     if (p === 'place-items') { const [a, b] = two(v); out.push(['align-items', a], ['justify-items', b]); continue; }
     if (p === 'gap') { const [a, b] = two(v); out.push(['row-gap', a], ['column-gap', b]); continue; }
+    if (p === 'background') { if (v === 'none' || v === 'transparent') { out.push(['background-color', 'transparent']); continue; }
+      if (/^(linear|radial|conic)-gradient\(/.test(v) && splitTop(v, ' ').length === 1 && splitTop(v).length === 1) { out.push(['background-image', v]); continue; }
+      if (splitTop(v, ' ').length === 1 && !/url\(|gradient\(/.test(v)) { out.push(['background-color', v]); continue; } }
     out.push([p, v]);
   }
   return out;
@@ -142,7 +146,7 @@ function convertHtml(html, page) {
   if (lh.length) { const gs = lh.first().children('g'), mini = s => s.replace(/\s*\n\s*/g, '').replace(/>\s+</g, '><');
     sprite = '<svg class="svg-sprite" width="0" height="0" aria-hidden="true" focusable="false"><defs><g id="alv-mark">' + mini($(gs[0]).html()) + '</g><g id="alv-word">' + mini($(gs[1]).html()) + '</g></defs></svg>'; }
   lh.each((i, el) => { $(el).removeAttr('xmlns').removeAttr('focusable').attr('aria-hidden', 'true').html('<use href="#alv-mark"></use><use href="#alv-word"></use>'); });
-  $('svg[viewBox="0 0 268 298"]').each((i, el) => { $(el).html('<use href="#alv-mark"></use>'); });
+  $('svg').filter((i, el) => $(el).attr('viewBox') === '0 0 268 298' || $(el).attr('viewbox') === '0 0 268 298').each((i, el) => { $(el).html('<use href="#alv-mark"></use>'); });
   $('.loader_line,.loader_solid,.loader_word').each((i, el) => { $(el).empty(); });
   return { $, sprite };
 }

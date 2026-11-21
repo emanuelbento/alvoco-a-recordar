@@ -47,8 +47,10 @@ const PATCHES = [
   [`$('.tt', nx).insertAdjacentHTML('beforeend', '<span class="tag now">A seguir</span>');`, `$('.home-year_title-wrap', nx).insertAdjacentHTML('beforeend', '<span class="tag is-now">A seguir</span>');`],
   /* the faces strip is a Webflow collection list: the cards are already in the page */
   [/  row\.innerHTML = ROSTOS\.map\(r => \{[\s\S]*?\}\)\.join\(''\);\n/, `  $$('.rs-c', row).forEach(c => { const ne = $('.home-rostos_name', c), re = $('.home-rostos_role', c), n = ne.textContent.trim(), a = re.textContent.trim(), age = c.dataset.idade, tw = /^Gémea/.test(a);
-    c.dataset.pt = first(n); c.draggable = false; const im = $('img', c); if (im) im.draggable = false;
-    if (a && !tw) { ne.textContent = a; re.textContent = n + (age ? ', ' + age : ''); } else re.textContent = a ? a + (age ? ', ' + age : '') : 'Alvoco das Várzeas'; });\n`],
+    c.dataset.pt = first(n); if (c.dataset.slug) c.setAttribute('href', '/rosto/' + c.dataset.slug); c.draggable = false; const im = $('img', c); if (im) im.draggable = false;
+    re.classList.remove('w-dyn-bind-empty');
+    if (a && !tw) { ne.textContent = a; re.textContent = n + (age ? ', ' + age : ''); } else re.textContent = a ? a + (age ? ', ' + age : '') : 'Alvoco das Várzeas'; });
+  if (!$('.rs-c', row)) return;\n`],
   /* the loader's logo is drawn from the sprite, so the paths exist once in the page */
   [/function loader\(ready\)\{\n/, `function loader(ready){\n  { const mk = $('#alv-mark'), wd = $('#alv-word'); if (mk && wd) { $('.ld-line').innerHTML = $('.ld-solid').innerHTML = mk.innerHTML; $('.ld-word').innerHTML = wd.innerHTML; } }\n`],
 ];
@@ -61,7 +63,7 @@ for (const f of fs.readdirSync(path.join(SRC, 'assets/fonts'))) fs.copyFileSync(
 
 /* ---------- the faces strip, as the collection list renders it ---------- */
 const ROSTOS = new Function('return ' + read('assets/app.js').match(/const ROSTOS = (\[[\s\S]*?\n\]);/)[1])();
-const stripItems = ROSTOS.map(r => `<div role="listitem" class="home-rostos_item w-dyn-item"><a class="home-rostos_card" href="/rosto/${r.s}"${r.age ? ` data-idade="${r.age}"` : ''}><div class="home-rostos_image-wrap image-wrapper"><img class="home-rostos_image image-cover" src="/alvoco2/assets/img/${r.s}.webp" alt="Retrato de ${r.n}" loading="lazy" width="1600" height="1067">${r.quote ? `<p class="home-rostos_quote">${r.quote}</p>` : ''}</div><div class="home-rostos_meta"><span class="home-rostos_name">${r.n}</span><span class="home-rostos_role">${r.a || ''}</span></div></a></div>`).join('');
+const stripItems = ROSTOS.map(r => `<div role="listitem" class="home-rostos_item w-dyn-item"><a class="home-rostos_card" href="/rostos" data-slug="${r.s}"${r.age ? ` data-idade="${r.age}"` : ''}><div class="home-rostos_image-wrap image-wrapper"><img class="home-rostos_image image-cover" src="/alvoco2/assets/img/${r.s}.webp" alt="Retrato de ${r.n}" loading="lazy" width="1600" height="1067">${r.quote ? `<p class="home-rostos_quote">${r.quote}</p>` : ''}</div><div class="home-rostos_meta"><div class="home-rostos_name">${r.n}</div><div class="home-rostos_role${r.a ? '' : ' w-dyn-bind-empty'}">${r.a || ''}</div></div></a></div>`).join('');
 
 /* ---------- pages ---------- */
 const pages = { home: 'index.html' };
@@ -84,7 +86,7 @@ for (const [name, file] of Object.entries(pages)) {
   fs.writeFileSync(path.join(OUT, name + '.html'), `<!doctype html><html lang="pt-PT" data-wf-page="x"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${dom[name].title}</title>
 <script>(function(){var d=document.documentElement;d.classList.add('js');try{if(!sessionStorage.getItem('alv-seen')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('ld-on');}catch(e){}})()</script>
 <link rel="stylesheet" href="/wfbase/normalize.css"><link rel="stylesheet" href="/wfbase/webflow.css">
-<link rel="stylesheet" href="/alvoco-a-recordar/webflow/out/native.css" id="native"><script>if(/nonative/.test(location.search))document.getElementById('native').remove()</script>
+<style>:root{${Object.entries(M.WFVARS).map(([k, v]) => k + ":" + v).join(";")}}</style>\n<link rel="stylesheet" href="/alvoco-a-recordar/webflow/out/native.css" id="native"><script>if(/nonative/.test(location.search))document.getElementById('native').remove()</script>
 <link rel="stylesheet" href="/alvoco-a-recordar/site/alvoco.css"></head><body>${body}
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script><script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script><script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script><script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/CustomEase.min.js"></script><script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script><script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/MotionPathPlugin.min.js"></script><script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/Flip.min.js"></script><script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 <script src="/alvoco-a-recordar/site/alvoco.js"></script></body></html>`);
@@ -100,7 +102,10 @@ fs.writeFileSync(path.join(SITE, 'alvoco.css'), head + RESET + '\n' + ext + '\n'
 runJs(); later.forEach(f => f());
 fs.writeFileSync(path.join(OUT, 'dom.json'), JSON.stringify(dom));
 /* ---------- native class styles ---------- */
-const nat = [...C.native].map(([k, m]) => { const [sel, bp] = k.split('|'); return { sel, bp: +bp, decls: [...m] }; });
+/* class styles point at the Webflow variables by name, so the builder links them */
+const bind = v => v.replace(/var\((--[\w-]+)\)/g, (m, n) => M.ALIAS[n] && n !== '--nav' ? 'var(' + M.ALIAS[n] + ')' : m); // --nav changes on phones, so it stays the page's own token
+const nat = [...C.native].map(([k, m]) => { const [sel, bp] = k.split('|'); const th = (!+bp && M.THEMED[sel]) || {};
+  return { sel, bp: +bp, decls: [...m].map(([p, v]) => [p, th[p] ? 'var(' + th[p] + ')' : bind(v)]) }; });
 fs.writeFileSync(path.join(OUT, 'native.json'), JSON.stringify(nat));
 const block = bp => nat.filter(r => r.bp === bp).map(r => r.sel + '{' + r.decls.map(d => d.join(':')).join(';') + '}').join('\n');
 fs.writeFileSync(path.join(OUT, 'native.css'), block(0) + [991, 767, 479].map(bp => `\n@media screen and (max-width: ${bp}px){\n${block(bp)}\n}`).join(''));
