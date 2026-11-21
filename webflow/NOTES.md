@@ -134,7 +134,7 @@ Every page of the prototype exists in Webflow, built by `payload.js` fragments p
 - DOM elements created by the builder (figure, figcaption, dl, dt, dd, i, b, mark, canvas, svg) keep a duplicate raw `class` attribute next to their Webflow class. Harmless, untidy.
 - Links are URL links with a raw `href` attribute, not page links.
 - Class values use the Webflow variable names as text; they resolve, but are not linked in the variables panel.
-- Nothing has been published, so the real Webflow render has never been seen. Publishing needs Emanuel's go-ahead.
+- Published to webflow.io on 21 Nov (see below); the render still has to be looked at.
 
 ## Agenda on the CMS (21 Nov 2026, 11h40)
 
@@ -143,3 +143,20 @@ Every page of the prototype exists in Webflow, built by `payload.js` fragments p
 - A class is created by a CSS rule in the builder call even when no element in that call uses it (`.agenda_collection{}`), so it can be applied afterwards with `set_style`.
 - Item attributes: `data-mes` (1 to 12) and `data-dia` on the item; `data-pagina` on the link, bound to the Link field `ligacao`, which accepts a path such as `/caminhada`. New field `texto-da-ligacao` holds the words of the link.
 - Without the script (and on the Designer canvas) the list is already right: "Data a anunciar" is written by CSS when `data-dia` is empty and the link hides when `data-pagina` is empty. The script only adds the year, reorders from today and marks the next date.
+
+## Published to webflow.io (21 Nov 2026, 11h44)
+
+- First publish, staging subdomain only: https://alvoco-a-recordar-website.webflow.io . The Agenda (7) and Rostos (9) items were set ready to publish first. Emanuel's go-ahead: "faz de tudo", in reply to the question about publishing to webflow.io.
+- Site code and the Global / Styles embed point at commit 5894076abe0919dc034098b88040244898169e8e.
+- The site's primary locale is still English (`en`) and the API cannot change it. The head boot script sets `lang="pt-PT"` until Site settings > Localization says Portuguese (Portugal).
+- The real render is still unseen from the build machine: webflow.io is not reachable from it and the browser extension on Emanuel's Mac was not answering.
+
+### Photographs, ready to upload
+Folder `/mnt/user-data/outputs/alvoco-fotos` (ephemeral machine): `alvoco-ponte`, `alvoco-aldeia`, `alvoco-colcurinho`, `alvoco-almoco`, `alvoco-rua`, `alvoco-noite`, and `rosto-<slug>` for the nine faces (.webp). Route that works: the Webflow Designer open in Emanuel's Chrome with the Claude extension, files sent to the Assets panel input. Upload hosts are not reachable from the build machine and the Designer upload-by-URL needs a public address, which the portraits must not have.
+
+Where each one goes:
+- home `picture_image` `1c44a443-b9c0-5260-d4fe-2a2ffe5b6edd`: ponte
+- sobre (page 6b015db4d6724bf363054538): `b0470b43-771b-c85b-4536-c190aa4fd09f` aldeia, `...d0af` colcurinho, `...d0be` rosto-conceicao-pimentel, `...d0cd` almoco, `...d0d9` rua, `...d0e5` rosto-acacio-mendes, `...d0f1` noite
+- caminhada (page 6b015db7daa395a66cdf292a): `9cf8367d-33a9-2394-c371-01286e5a17e6` colcurinho
+- Rostos items, field `retrato` (collection 6b00eff9b5fc0855c0fa78cc): tia-maria `6b00f034416487a70d3a3eb2`, conceicao-pimentel `...3eb4`, jose-lobo `...3eb6`, nascimento-andrade `...3eb8`, irene-tavares `...3eba`, soledade-tavares `...3ebc`, acacio-mendes `...3ebe`, maria-ferreira `...3ec0`, judite-lobo `...3ec2`
+- Agenda items (collection 6b00eff963329174511ab335): `6b00f034da73ffacfbf6b5ca` to `...b5d6`, even last byte.
