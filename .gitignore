@@ -1,0 +1,13 @@
+.env
+.env.*
+*.pem
+discord-webhooks.json
+node_modules/
+__pycache__/
+.DS_Store
+# generated pages: run `python3 src/build.py`
+src/*.html
+# photographs live in Webflow, not in this public repository
+src/assets/img/*.webp
+src/assets/img/*.jpg
+src/assets/img/*.png
