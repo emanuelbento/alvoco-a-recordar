@@ -53,7 +53,6 @@ function socio(d) {
       'Estado': { select: { name: 'Novo' } },
       'Origem': { select: { name: 'Site' } },
       'Data do pedido': { date: { start: hoje() } },
-      'Nome próprio': txt(nome), 'Apelido': txt(apelido),
       'Email': { email: email },
       'Telemóvel': { phone_number: clean(d.telemovel) || null },
       'Data de nascimento': { date: nascimento(d) },
@@ -76,7 +75,7 @@ function socio(d) {
       { name: NOME });
     GmailApp.sendEmail(P.getProperty('EMAIL_DIRECAO'), 'Novo sócio n.º ' + numero + ': ' + nome + ' ' + apelido,
       nome + ' ' + apelido + ' inscreveu-se no site e ficou com o n.º ' + numero + '.\n\nEmail: ' + email + '\nLocalidade: ' + clean(d.localidade) + '\nPagamento preferido: ' + clean(d.pagamento) +
-      '\n\nRegisto no Notion: ' + page.url + '\n\nQuando o pagamento entrar, regista-o em Quotas e muda o estado para Ativo.',
+      '\n\nRegisto no Notion: ' + page.url + '\n\nQuando o pagamento entrar, marca o visto em Joia e muda o estado para Ativo.',
       { name: NOME, replyTo: email });
   } catch (err) { console.error(err); }
 

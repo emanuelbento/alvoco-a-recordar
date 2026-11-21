@@ -20,10 +20,10 @@ Photographs are not in this repository. They are uploaded to Webflow.
 
 ## Loading from Webflow
 
-Files are served by jsDelivr from a tag, so a release never changes under a published site:
+Files are served by jsDelivr from a commit or a tag, so a release never changes under a published site:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/emanuelbento/alvoco-a-recordar@0.1.0/src/assets/app.js" defer></script>
+<script src="https://cdn.jsdelivr.net/gh/emanuelbento/alvoco-a-recordar@7a7cea5/src/assets/app.js" defer></script>
 ```
 
 ## Membership form
