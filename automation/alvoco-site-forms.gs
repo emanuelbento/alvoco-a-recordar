@@ -15,7 +15,6 @@
 const P = PropertiesService.getScriptProperties();
 const TZ = 'Europe/Lisbon';
 const NOME = 'Associação Alvôco a Recordar';
-const PAISES = ['Portugal', 'França', 'Suíça', 'Luxemburgo', 'Alemanha', 'Bélgica', 'Reino Unido', 'Espanha', 'Brasil', 'Canadá', 'Estados Unidos', 'Outro'];
 const PAGAMENTOS = { 'MB WAY': 'MB WAY', 'Transferência bancária': 'Transferência bancária', 'Em mão, em Alvoco': 'Em mão', 'Em mão': 'Em mão' };
 const ASSUNTOS = ['Dúvida', 'Caminhada Noturna', 'Sócios e quotas', 'Partilhar uma memória'];
 
@@ -46,7 +45,6 @@ function socio(d) {
     if (dup.results.length) return { ok: true, numero: dup.results[0].properties['N.º de sócio'].number, repetido: true };
 
     numero = proximoNumero();
-    const pais = PAISES.indexOf(clean(d.pais)) > -1 ? clean(d.pais) : 'Outro';
     page = notion('pages', { parent: { database_id: P.getProperty('DB_SOCIOS') }, properties: {
       'Nome completo': { title: [{ text: { content: nome + ' ' + apelido } }] },
       'N.º de sócio': { number: numero },
@@ -57,7 +55,7 @@ function socio(d) {
       'Telemóvel': { phone_number: clean(d.telemovel) || null },
       'Data de nascimento': { date: nascimento(d) },
       'Natural de': txt(d.natural), 'Morada': txt(d.morada), 'Código postal': txt(d.cp), 'Localidade': txt(d.localidade),
-      'País': { select: { name: pais } },
+      'País': txt(d.pais),
       'NIF': txt(d.nif),
       'Pagamento preferido': { select: PAGAMENTOS[clean(d.pagamento)] ? { name: PAGAMENTOS[clean(d.pagamento)] } : null },
       'Declaração aceite': { checkbox: true }, 'Consentimento de dados': { checkbox: true }
