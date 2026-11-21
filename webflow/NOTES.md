@@ -106,7 +106,7 @@ Created as copies of a clean shell (page-wrapper with the four global components
 | rosto (CMS template) | 6b00eff9b5fc0855c0fa78d2 |
 
 Component `Section / Join`: 9714e5df-c836-5c4d-8535-5d683d5f3a01 (home and sobre).
-Site code and the Global / Styles embed point at commit 9449bb3b0306164a687e38cf85cae67d915ba458.
+Site code (head, footer) and the Global / Styles embed point at commit 2f5bfe874ef2540147ca85903f505c7259b1c409, the last one that changed `site/`.
 
 ## State after building every page (21 Nov 2026, morning)
 
