@@ -36,10 +36,54 @@ body element `{component: 6b00dcb4fdb9505a07c51aff, element: 6b00dcb4fdb9505a07c
 - An `<img>` without `src` is accepted and becomes an empty Image element.
 - `<canvas>` is accepted.
 
-## Home page element ids (component 6b00dcb4fdb9505a07c51aff)
+## How the build works
 
-page-wrapper 645d3b54-56af-4a60-b8f3-d41ac0a08f3b · main-wrapper 645d3b54-56af-4a60-b8f3-d41ac0a08f3a
-skip link 1a54449a-0293-be83-a3a5-d995ad683bc9 · nav 0963233f-eeda-6592-7a64-06d255057ab8 · menu 81b0868d-9e95-2eb3-001c-7694bca0075c
-hero b9d474d7-486d-b222-1316-c6333abd2d8e · picture 1c44a443-b9c0-5260-d4fe-2a2ffe5b6ee5 · manifesto 8431b27a-f5ac-206d-c0be-9415f2dfd085
-trail 87cac608-f8ab-68db-2883-03695edc079c · night b43c988a-f8d5-7975-970b-ceb9ab4c1c70 · year 1416041e-fed4-5e43-baf5-80adf5441901
-rostos 9f459858-b08b-4a9f-7e95-158b8ecc47bf · memory d95ea35c-9033-f686-0f48-9543fb2a0f48
+1. `node build.js` converts the prototype (`/home/claude/alvoco2` in the working session, also in `src/`)
+   using `maps.js`: class names become Client-First names, the stylesheet is split in two, the script
+   gets the new names and Webflow's URLs.
+   - `out/native.json` / `out/native.css`: single class rules. These live in Webflow classes.
+   - `site/alvoco.css`: everything else (states, pseudo elements, hovers, odd breakpoints), plus a
+     low-priority copy of the class rules (`html :where(.x)`) that only matters when Webflow drops a property.
+   - `site/alvoco.js`: the site script. Served by jsDelivr at a full commit hash.
+2. `node payload.js` cuts the page into fragments for the HTML builder (`out/payload/`). A class is sent
+   once, utilities before component classes, so the component class comes later in Webflow's CSS.
+3. `out/home.html` mirrors Webflow's output (its base CSS, the class CSS, the variables, link classes).
+   It is compared pixel by pixel with the prototype (0 px difference at 1440, 1100, 1024, 768, 600, 390)
+   and run with motion on. The test scripts are not in the repo.
+4. Breakpoints were moved to Webflow's: 900 to 991, 760 and 700 to 767, 560 and 520 to 479.
+
+## State of the Webflow site (21 Nov, 08h30)
+
+Home page, inside `page-wrapper`:
+- `Global / Styles` (component 4cbafe6e-f5fd-1fca-093e-a5f13f798749): three embeds. The stylesheet import
+  for the canvas (full commit hash), the logo sprite (`#alv-mark`, `#alv-word`), the loader and transition.
+- `Global / Nav` (9d2f73c9-a0e8-c368-d369-1d4e9dd2e6d2): skip link, bar, menu.
+- `main-wrapper` (645d3b54-56af-4a60-b8f3-d41ac0a08f3a): hero, picture, manifesto, trail, night, year,
+  rostos, memory, join.
+- `Global / Footer` (5aae2b57-b054-cbfb-9ec7-63ad594b9431).
+- `Global / Drawer` (bde0a990-e010-dee4-8ccd-de2d66f1e2d4): the membership form, as an embed.
+
+The faces strip is a collection list on Rostos (wrapper 3a6950dc-3bf6-f0a9-99cb-00f8b277a5e4): name,
+nickname, quote and portrait bound, `data-slug` and `data-idade` bound as attributes. The script sets the
+link from the slug.
+
+Variables: collections Base, Theme, Typography, Layout, Sizes. The class styles name them
+(`var(--_base---green--500)`), and `site/alvoco.css` points its short tokens at them.
+
+Site custom code: head (boot script, fonts, stylesheet) and footer (GSAP, Lenis, `site/alvoco.js`,
+`window.ALV_ENDPOINT`).
+
+## Not done yet
+
+- Nothing is published. The real Webflow render has not been seen: only the local mirror was tested.
+- Photos are not in the asset library (bridge picture, nine portraits).
+- The year list on the home page is static. It should become a collection list on Agenda.
+- Sort the faces list by `ordem` (the API call failed twice with a conflict).
+- The collection list's empty state still says "No items found."
+- Links are plain URLs (`/sobre`). Once the pages exist, switch them to page links and remove the raw
+  `href` attribute the builder left on each link.
+- Link the main utility classes to the variables with the style tool, so the Style panel shows them.
+- Other pages: sobre, rostos (list and template), caminhada, agenda, contactos, em-memoria, documentos,
+  privacidade, cookies, 404. Their classes still have the prototype's names in `site/`.
+- When `site/alvoco.css` changes: update the hash in the head code, the footer code and the first embed
+  of `Global / Styles`.
