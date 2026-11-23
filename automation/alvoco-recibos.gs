@@ -92,8 +92,8 @@ function reciboHtml(r) {
       '<td valign="top"><div style="' + lbl + '">Valor</div><div style="font-size:20pt;font-weight:bold;color:#14201a">' + euros(r.valor) + '</div></td></tr>' +
     '</table>' +
     '<div style="margin:26pt 0 0;font-size:10pt">Alvoco das Várzeas, ' + dataLonga(r.data) + '</div>' +
-    (assinatura() ? '<div style="margin:22pt 0 0;line-height:0"><img src="' + assinatura() + '" height="60" style="height:60px;width:auto"></div>' : '<div style="height:40pt"></div>') +
-    '<div style="margin:0;width:240px;border-top:1pt solid #14201a;padding-top:5pt;font-size:10pt">' + esc(ASSOCIACAO.cargo) + '<br>' + esc(ASSOCIACAO.assina) + '</div>' +
+    (assinatura() ? '<div style="margin:30pt 0 2pt;line-height:0"><img src="' + assinatura() + '" width="260" style="width:260px;height:auto"></div>' : '<div style="height:40pt"></div>') +
+    '<div style="margin:0;width:260px;border-top:1pt solid #14201a;padding-top:5pt;font-size:10pt">' + esc(ASSOCIACAO.cargo) + '<br>' + esc(ASSOCIACAO.assina) + '</div>' +
     (clean(P.getProperty('NOTA_RECIBO')) ? '<div style="margin:30pt 0 0;font-size:8pt;color:#5b6a60">' + esc(P.getProperty('NOTA_RECIBO')) + '</div>' : '') +
     '<div style="margin:16pt 0 0;font-size:8pt;color:#5b6a60">Documento emitido automaticamente pela ' + esc(ASSOCIACAO.nome) + '.</div>' +
     '</body></html>';
