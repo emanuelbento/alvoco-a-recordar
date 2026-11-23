@@ -124,6 +124,7 @@ const PATCHES = [
   [/const img = s => [^\n]*\n/, ''],
   [/const sub = r => [^\n]*\n/, ''],
   /* the loader's logo is drawn from the sprite, so the paths exist once in the page */
+  [/const boot = \(\) => \{\n/, `const boot = () => {\n  $$('svg[viewBox="0 0 268 298"]').forEach(s => s.setAttribute('viewBox', '0 0 292 298')); { const lr = $('.ld-rect'); lr && lr.setAttribute('width', 300); }\n`],
   [/function loader\(ready\)\{\n/, `function loader(ready){\n  { const mk = $('#alv-mark'), wd = $('#alv-word'); if (mk && wd) { $('.ld-line').innerHTML = $('.ld-solid').innerHTML = mk.innerHTML; $('.ld-word').innerHTML = wd.innerHTML; } }\n`],
 ];
 /* script first needs the same docs: see below */

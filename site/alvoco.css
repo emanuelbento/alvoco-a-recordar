@@ -804,6 +804,16 @@ html :where(.drawer_done-card){display:block}
 .drawer_review dd{grid-column:1/-1;grid-row:2}
 html :where(.drawer_body),html :where(.drawer_header),html :where(.drawer_footer){padding-inline:20px}
 }
+.button .btn-tx{display:inline-flex;overflow:clip;padding-block:.24em;margin-block:-.24em}
+.button .btn-tx span{display:block;text-shadow:0 2.4em 0 currentColor;transition:translate .55s var(--ease)}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+.button:is(:hover,:focus-visible) .btn-tx span{translate:0 -2.4em}
+}
+html :where(.line-mask){padding-bottom:.24em;margin-bottom:-.24em}
+html :where(.sl-mask){padding-bottom:.24em;margin-bottom:-.24em}
+@media (min-width:900px){
+.home-trail_list .home-trail_item:last-child .home-trail_text{bottom:auto;top:36px}
+}
 @media (prefers-reduced-motion:reduce){
 *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
 html.js [data-r]{visibility:visible}

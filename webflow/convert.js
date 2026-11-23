@@ -149,7 +149,7 @@ function convertHtml(html, page) {
   if (lh.length) { const gs = lh.first().children('g'), mini = s => s.replace(/\s*\n\s*/g, '').replace(/>\s+</g, '><');
     sprite = '<svg class="svg-sprite" width="0" height="0" aria-hidden="true" focusable="false"><defs><g id="alv-mark">' + mini($(gs[0]).html()) + '</g><g id="alv-word">' + mini($(gs[1]).html()) + '</g></defs></svg>'; }
   lh.each((i, el) => { $(el).removeAttr('xmlns').removeAttr('focusable').attr('aria-hidden', 'true').html('<use href="#alv-mark"></use><use href="#alv-word"></use>'); });
-  $('svg').filter((i, el) => $(el).attr('viewBox') === '0 0 268 298' || $(el).attr('viewbox') === '0 0 268 298').each((i, el) => { $(el).html('<use href="#alv-mark"></use>'); });
+  $('svg').filter((i, el) => /^0 0 (268|292) 298$/.test($(el).attr('viewBox') || $(el).attr('viewbox') || '')).each((i, el) => { $(el).html('<use href="#alv-mark"></use>'); });
   $('.loader_line,.loader_solid,.loader_word').each((i, el) => { $(el).empty(); });
   return { $, sprite };
 }
