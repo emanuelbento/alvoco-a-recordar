@@ -25,12 +25,12 @@ const GLIFO_LARGURA = { '0': 25.27, '1': 14.55, '2': 22.88, '3': 22.59, '4': 24.
 
 /**
  * Creates one receipt. tipo: 'joia' or 'quota'. ano: the quota year (for the joia, the year of entry).
- * sim: true for tests and simulations (number "TESTE", nothing saved, counter untouched).
+ * sim: true for tests and simulations (number <year>/000, nothing saved, counter untouched).
  * Returns { numero, pdf, linha } where linha is the text for the Notion column.
  */
 function recibo(s, tipo, ano, sim) {
   const data = hoje();
-  const numero = sim ? 'TESTE' : proximoRecibo(+data.slice(0, 4));
+  const numero = sim ? data.slice(0, 4) + '/000' : proximoRecibo(+data.slice(0, 4));   // 000 is never a real number: tests and simulations only
   const valor = tipo === 'joia' ? JOIA : QUOTA;
   let referente;
   if (tipo === 'joia') {
@@ -111,14 +111,14 @@ function extenso(v) {
   return txt + (n === 1 ? ' euro' : ' euros');
 }
 
-/** Sends you a sample of both receipts (number TESTE). Nothing is saved and the numbering does not move. */
+/** Sends you a sample of both receipts (number <year>/000). Nothing is saved and the numbering does not move. */
 function testarRecibo() {
   const s = { nome: 'Teste Site', proprio: 'Teste', numero: 45, nif: '', admissao: hoje() };
   const ano = anoAtual();
   const pasta = pastaRecibos(ano).getParents().next();   // creates the folder the first time, so the signature has somewhere to go
   console.log('Pasta dos recibos: ' + pasta.getUrl() + (assinatura() ? ' (assinatura encontrada)' : ' (ainda sem assinatura.png)'));
   const a = recibo(s, 'joia', ano, true), b = recibo(s, 'quota', ano + 1, true);
-  GmailApp.sendEmail(Session.getActiveUser().getEmail(), '[teste] Recibos', 'Exemplos dos dois recibos, com o número TESTE.', { name: NOME, attachments: [a.pdf, b.pdf] });
+  GmailApp.sendEmail(Session.getActiveUser().getEmail(), '[teste] Recibos', 'Exemplos dos dois recibos, com o número 000, que nunca é usado num recibo verdadeiro.', { name: NOME, attachments: [a.pdf, b.pdf] });
 }
 
 /** "N.º 2026/001" as a row of Exo images. Anything that is not a digit or a slash (the TESTE number) falls back to text. */
