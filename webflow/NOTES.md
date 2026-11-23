@@ -160,3 +160,30 @@ Where each one goes:
 - caminhada (page 6b015db7daa395a66cdf292a): `9cf8367d-33a9-2394-c371-01286e5a17e6` colcurinho
 - Rostos items, field `retrato` (collection 6b00eff9b5fc0855c0fa78cc): tia-maria `6b00f034416487a70d3a3eb2`, conceicao-pimentel `...3eb4`, jose-lobo `...3eb6`, nascimento-andrade `...3eb8`, irene-tavares `...3eba`, soledade-tavares `...3ebc`, acacio-mendes `...3ebe`, maria-ferreira `...3ec0`, judite-lobo `...3ec2`
 - Agenda items (collection 6b00eff963329174511ab335): `6b00f034da73ffacfbf6b5ca` to `...b5d6`, even last byte.
+
+## Photographs in Webflow Assets (23 Nov 2026)
+
+Uploaded through the Designer in Emanuel's Chrome (Assets panel file input, `file_upload` from `/home/claude/alvoco-fotos`; the `/mnt/user-data/outputs` path is refused). Hosted at `https://s3.amazonaws.com/webflow-prod-assets/6b00dcb2fdb9505a07c51afc/<id>_<name>.webp`.
+
+| asset | id |
+| --- | --- |
+| alvoco-ponte | 6b0458ddad7c6d2f6570d6ac |
+| alvoco-aldeia | 6b0458e7d254a344af33aa2a |
+| alvoco-colcurinho | 6b0458e77e8d4763e09ef3a6 |
+| alvoco-almoco | 6b0458e73cb38f4d6341c383 |
+| alvoco-rua | 6b0458e75fe696f6e2e60729 |
+| alvoco-noite | 6b0458e74dc8ad98231bbc6f |
+| rosto-tia-maria | 6b0458e7c0ba52d0ce1df987 |
+| rosto-conceicao-pimentel | 6b0458e7a5218d0beaba8ce0 |
+| rosto-jose-lobo | 6b0458e79c2ccce7a53b753f |
+| rosto-nascimento-andrade | 6b0458e7ebd97f58e40987b9 |
+| rosto-irene-tavares | 6b0458e75d79e31b069a33ee |
+| rosto-soledade-tavares | 6b0458ec44407300c290b999 |
+| rosto-acacio-mendes | 6b0458e7a9148441f3611d63 |
+| rosto-maria-ferreira | 6b0458e7671c6f475db6dcf5 |
+| rosto-judite-lobo | 6b0458e7ebd97f58e40987ea |
+
+## First look at the real render (23 Nov 2026)
+
+- https://alvoco-a-recordar-website.webflow.io renders like the prototype at 1920: hero 3D, trail, night, CMS year list with the "A seguir" tag, faces strip, memory, join, footer. jsDelivr serves the files, fonts load, no console errors.
+- Bug found: the HTML builder drops `<use>` inside `<svg>`, so every logo drawn from the sprite outside an embed was empty (nav, menu, footer mark, member card front and back, memorial placeholder). Fixed by adding DOM elements with tag `use` and attribute `href` (`#alv-mark`, `#alv-word`) through the element builder. They also render on the Designer canvas.
