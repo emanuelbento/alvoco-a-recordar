@@ -568,6 +568,9 @@ html :where(.walk-scene_km){text-align:right;padding-bottom:4px;font:800 clamp(2
 html :where(.walk-scene_hud){grid-template-columns:1fr auto;row-gap:var(--s2)}
 html :where(.walk-scene_progress){grid-column:1/-1;grid-row:1}
 }
+@media (max-width:767px){
+html :where(.walk-scene_land){top:auto;height:92%}
+}
 html :where(.walk-info_intro){grid-column:1/span 5;display:grid;gap:var(--s4);justify-items:start;align-content:start}
 .section_walk-info dl{grid-column:7/span 6;margin:0}
 .section_walk-info dl>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:var(--gap);padding-block:18px 22px;border-top:1px solid var(--ln)}

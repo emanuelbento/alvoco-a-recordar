@@ -556,7 +556,7 @@ function caminhada(m){
   q('.walk-scene_walker').forEach((w, i) => tl.set(w, { opacity: 1 }, .02 + i * .014).to(w, { motionPath: { path: trail_, align: trail_, alignOrigin: [.5, .5] }, duration: .9 }, .02 + i * .014));
   tl.to(q('.walk-scene_sky .walk-scene_sky-1'), { opacity: 1, duration: .2 }, .3).to(q('.walk-scene_sky .walk-scene_sky-2'), { opacity: 1, duration: .22 }, .52).to(q('.walk-scene_sky .walk-scene_sky-3'), { opacity: 1, duration: .14 }, .84)
     .to(q('.walk-scene_stars'), { opacity: 0, duration: .3 }, .4).to(q('.walk-scene_moon'), { y: '42vh', opacity: 0, duration: .5 }, .2).to(q('.walk-scene_lights'), { opacity: 0, duration: .2 }, .55).to(q('.walk-scene_lamps'), { opacity: 0, duration: .08 }, .92);
-  [['#r4', '#8e8b98', '#a8b5bf'], ['#r3', '#6a6972', '#7e8e8e'], ['#r2', '#4a4a47', '#566550'], ['#r1', '#2b2d27', '#3d4c36'], ['#r0', '#151a14', '#253120']]
+  [['#r4', '#8e8b98', '#a8b5bf'], ['#r3', '#6a6972', '#7e8e8e'], ['#r2, .vil, .r2c', '#4a4a47', '#566550'], ['.chp', '#34332f', '#3e4a38'], ['#r1', '#2b2d27', '#3d4c36'], ['#r0', '#151a14', '#253120']]
     .forEach(([id, a, b]) => tl.to(q(id), { attr: { fill: a }, duration: .3 }, .5).to(q(id), { attr: { fill: b }, duration: .15 }, .85));
   tl.to(q('.walk-scene_fog'), { opacity: .85, duration: .2, stagger: .05 }, .68).to(q('.walk-scene_fog'), { xPercent: 5, duration: .32 }, .68)
     .to(sun, { opacity: 1, duration: .1 }, .7).to(sunP, { p: 1, duration: .24, onUpdate: () => placeSun(sunP.p) }, .7).to(q('.walk-scene_captions'), { color: '#14201a', duration: .04 }, .835);
