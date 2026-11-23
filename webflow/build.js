@@ -17,6 +17,10 @@ const EXTRA = `
 .embed-contents{display:contents}
 [data-embed]>.w-embed{display:contents}
 html:not(.js) .tr-t{opacity:1;transform:none}
+html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_bar{color:var(--w);background:rgb(12 21 16 / .4);box-shadow:inset 0 -1px 0 rgb(246 248 243 / .12)}
+html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_component .site-logo{color:var(--w)}
+html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_component .button{background:var(--w);color:var(--v-dd)}
+html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_burger{background:rgb(246 248 243 / .16)}
 .ag-i:not([data-dia]) .ag-dt::after,.ag-i[data-dia=""] .ag-dt::after{content:"Data a anunciar";color:rgb(246 248 243 / .56)}
 .agenda_link[data-pagina=""],.agenda_link:not([data-pagina]){display:none}
 .agenda_link-label{display:inline}
@@ -81,7 +85,8 @@ const PATCHES = [
   $('.lib-n', m).textContent = recs.length + ' rostos';`],
   [/function rosto\(m\)\{[\s\S]*?\n\}\n/, `function rosto(m){
   const slug = decodeURIComponent(location.pathname.replace(/\\/+$/, '').split('/').pop());
-  const n = $('.rosto_title', m).textContent.trim(), f = first(n), fill = (e, t) => { e.classList.remove('w-dyn-bind-empty'); e.textContent = t; };
+  const n = $('.rosto_title', m).textContent.trim(), f = first(n); document.title = n + ', Rostos Alvocenses';
+  const fill = (e, t) => { e.classList.remove('w-dyn-bind-empty'); e.textContent = t; };
   const al = $('.rosto_header-alias', m), alias = [al.textContent.trim(), al.dataset.idade ? al.dataset.idade + ' à data do registo' : ''].filter(Boolean).join(', ');
   if (alias) fill(al, alias); else al.remove();
   fill($('.rosto_caption-name', m), n + ', Alvoco das Várzeas');

@@ -825,6 +825,10 @@ html :where(.home-rostos_card){width:100%}
 html :where(.embed-contents){display:contents}
 [data-embed]>.w-embed{display:contents}
 html:not(.js) .home-trail_text{opacity:1;transform:none}
+html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_bar{color:var(--w);background:rgb(12 21 16 / .4);box-shadow:inset 0 -1px 0 rgb(246 248 243 / .12)}
+html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_component .site-logo{color:var(--w)}
+html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_component .button{background:var(--w);color:var(--v-dd)}
+html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_burger{background:rgb(246 248 243 / .16)}
 .agenda_item:not([data-dia]) .agenda_date::after,.agenda_item[data-dia=""] .agenda_date::after{content:"Data a anunciar";color:rgb(246 248 243 / .56)}
 .agenda_link[data-pagina=""],.agenda_link:not([data-pagina]){display:none}
 html :where(.agenda_link-label){display:inline}

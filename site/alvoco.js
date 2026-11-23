@@ -522,7 +522,8 @@ function rostos(m){
 }
 function rosto(m){
   const slug = decodeURIComponent(location.pathname.replace(/\/+$/, '').split('/').pop());
-  const n = $('.rosto_title', m).textContent.trim(), f = first(n), fill = (e, t) => { e.classList.remove('w-dyn-bind-empty'); e.textContent = t; };
+  const n = $('.rosto_title', m).textContent.trim(), f = first(n); document.title = n + ', Rostos Alvocenses';
+  const fill = (e, t) => { e.classList.remove('w-dyn-bind-empty'); e.textContent = t; };
   const al = $('.rosto_header-alias', m), alias = [al.textContent.trim(), al.dataset.idade ? al.dataset.idade + ' à data do registo' : ''].filter(Boolean).join(', ');
   if (alias) fill(al, alias); else al.remove();
   fill($('.rosto_caption-name', m), n + ', Alvoco das Várzeas');
