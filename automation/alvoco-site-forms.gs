@@ -18,8 +18,8 @@
 const P = PropertiesService.getScriptProperties();
 const TZ = 'Europe/Lisbon';
 const NOME = 'Associação Alvôco a Recordar';
-// PNG of the logo in the public repository, served by jsDelivr at a fixed commit (email clients do not show SVG)
-const LOGO = 'https://cdn.jsdelivr.net/gh/emanuelbento/alvoco-a-recordar@0483362ff889023aea69d8668848918951d4f06f/site/email-logo.png';
+// Images for the welcome email, in the public repository, served by jsDelivr at a fixed commit (email clients do not show SVG)
+const IMG = 'https://cdn.jsdelivr.net/gh/emanuelbento/alvoco-a-recordar@cc64412d26cc75ea11a5009bd25b3c770ee6e7b0/site/';
 const PAGAMENTOS = { 'MB WAY': 'MB WAY', 'Transferência bancária': 'Transferência bancária', 'Em mão, em Alvoco': 'Em mão', 'Em mão': 'Em mão' };
 const ASSUNTOS = ['Dúvida', 'Caminhada Noturna', 'Sócios e quotas', 'Partilhar uma memória'];
 
@@ -72,7 +72,7 @@ function socio(d) {
 
   // The record exists from here on. A mail failure must not turn a saved member into an error on the site.
   try {
-    const m = boasVindas(proprio, numero);
+    const m = boasVindas(proprio, numero, completo);
     GmailApp.sendEmail(email, m.assunto, m.texto, { name: NOME, htmlBody: m.html });
     GmailApp.sendEmail(P.getProperty('EMAIL_DIRECAO'), 'Novo sócio n.º ' + numero + ': ' + completo,
       completo + ' inscreveu-se no site e ficou com o n.º ' + numero + '.\n\nEmail: ' + email + '\nLocalidade: ' + clean(d.localidade) + '\nPagamento preferido: ' + clean(d.pagamento) +
@@ -102,8 +102,23 @@ function contacto(d) {
   return { ok: true };
 }
 
+/** The member card from the site, drawn with a table so it survives Gmail, Outlook and Apple Mail. Name and number are live text. */
+function cartao(completo, numero) {
+  const esc = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const exo = "font-family:'Exo','Arial Black',Arial,sans-serif;font-weight:800";
+  const small = 'font-size:11px;line-height:1.3;color:#c9d2c4';
+  return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" background="' + IMG + 'email-card.jpg" ' +
+    'style="max-width:464px;border-collapse:separate;border-radius:18px;background:#1b2a1f url(' + IMG + 'email-card.jpg) center / cover no-repeat;color:#f6f8f3;margin:0 0 32px">' +
+    '<tr><td valign="top" style="padding:22px 0 0 24px"><img src="' + IMG + 'email-logo-white.png" width="96" alt="' + NOME + '" style="display:block;width:96px;height:auto;border:0"></td>' +
+    '<td valign="top" align="right" style="padding:22px 24px 0 0;' + small + '">Cartão<br>de sócio</td></tr>' +
+    '<tr><td colspan="2" style="padding:30px 24px 0"><div style="' + small + ';margin:0 0 6px">Sócio n.º</div>' +
+    '<div style="' + exo + ';font-size:58px;line-height:.9;letter-spacing:-1px;color:#f6f8f3">' + String(numero).padStart(3, '0') + '</div></td></tr>' +
+    '<tr><td valign="bottom" style="padding:30px 12px 22px 24px;' + exo + ';font-size:17px;line-height:1.1;text-transform:uppercase;color:#f6f8f3">' + esc(completo) + '</td>' +
+    '<td valign="bottom" align="right" style="padding:30px 24px 22px 0;white-space:nowrap;' + small + '">Alvoco das<br>Várzeas</td></tr></table>';
+}
+
 /** Welcome email: plain text for old clients, HTML for everyone else. The payment block comes from Script properties. */
-function boasVindas(proprio, numero) {
+function boasVindas(proprio, numero, completo) {
   // MBWAY, MbWay or MB_WAY: the property name is forgiving, the value is what matters
   const mbway = clean(P.getProperty('MBWAY') || P.getProperty('MbWay') || P.getProperty('MB_WAY')), iban = clean(P.getProperty('IBAN')), livre = clean(P.getProperty('TEXTO_PAGAMENTO'));
   const formas = [];
@@ -119,9 +134,7 @@ function boasVindas(proprio, numero) {
     p('Põe o teu número de sócio, <b>' + numero + '</b>, no descritivo, para sabermos de quem é.');
   const html = '<div style="background:#eceee6;padding:32px 16px;font-family:Helvetica,Arial,sans-serif;color:#14201a;font-size:16px;line-height:1.55">' +
     '<div style="max-width:520px;margin:0 auto;background:#f6f8f3;padding:32px 28px">' +
-    '<img src="' + LOGO + '" width="150" height="70" alt="' + NOME + '" style="display:block;width:150px;height:auto;border:0;margin:0 0 28px">' +
-    '<p style="margin:0 0 4px;font-size:13px;color:#476949">Cartão de sócio</p>' +
-    '<p style="margin:0 0 24px;font-size:64px;line-height:1;font-weight:800;color:#476949;letter-spacing:-1px">' + String(numero).padStart(3, '0') + '</p>' +
+    cartao(completo, numero) +
     p('Olá, ' + esc(proprio) + '.') +
     p('Recebemos o teu pedido. O teu número de sócio é o <b>' + numero + '</b>. É teu a partir de hoje e não muda.') +
     pagamento +
@@ -137,7 +150,7 @@ function boasVindas(proprio, numero) {
 
 /** Run this from the editor to see the welcome email in your own inbox. No record in Notion. */
 function testarEmail() {
-  const m = boasVindas('Teste', 45);
+  const m = boasVindas('Teste', 45, 'Teste Site');
   GmailApp.sendEmail(Session.getActiveUser().getEmail(), '[teste] ' + m.assunto, m.texto, { name: NOME, htmlBody: m.html });
 }
 
