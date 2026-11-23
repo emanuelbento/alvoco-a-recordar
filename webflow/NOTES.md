@@ -232,3 +232,11 @@ Emanuel looked at two redesign attempts (new buttons, contour lines behind page 
 Checked on the published site at 1518 wide: loader draws the whole mark, the transition shows the whole mark, the night clock stops at 06:00, labels are wrapped, no console errors. `src/` now matches the prototype source used for this build.
 
 Rules that came out of the feedback: no lines over text, no device that resembles the CMD site (fine line ribbons behind titles), no colour treatment animated over photographs.
+
+## Walk scene: village and chapel (23 Nov 2026, night)
+
+- The two arches at the foot of the scene read as tents and sat under the clock and progress bar. They are gone. Alvoco das Várzeas is now drawn on a shoulder of the r2 ridge (x 600 to 790, y about 650 to 690): ten houses with pitched roofs, the parish church with its tower, lit windows and five street lamps. Windows and lamps live in `walk-scene_lights`, so they switch off at dawn as before. Houses use class `vil`, the colour of r2, and turn grey with it.
+- The chapel was a flat pictogram on a rounded dome and stayed pure black at dawn. r2 now has a small plateau at the summit; the chapel is drawn side on (nave, lower apse, bell gable with the cross) with its base buried under a patch of summit (`r2c`). It takes its own dawn colour (`chp`), a little darker than the ridge.
+- Trail starts in the village and ends at the chapel door. `#summit` moved to 988 418 so the sun rises behind the chapel.
+- Phone: `.walk-scene_land` is 92% tall from 767 down so village and chapel both fit the width. That class exists only inside the embed, so the stylesheet rule is enough.
+- Embed `f9241822-2a8c-0995-c335-bcbe89a59fa8` on /caminhada replaced. Site files at commit 32752a74340ebbf0b53bf17ab82ce20338c9dda0 (head, footer, Global Styles embed).

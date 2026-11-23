@@ -546,6 +546,8 @@ html.ld-on .nav{opacity:0}
 .km{text-align:right;padding-bottom:4px;font:800 clamp(26px,2.8vw,50px)/.84 var(--exo);font-variant-numeric:tabular-nums}
 .km small{display:block;margin-top:6px;font:500 13px var(--sans);opacity:.6}
 @media (max-width:700px){.hud{grid-template-columns:1fr auto;row-gap:var(--s2)}.prg{grid-column:1/-1;grid-row:1}}
+/* phone: the land is drawn a little smaller so the village and the chapel both fit the width */
+@media (max-width:700px){.land{top:auto;height:92%}}
 .cinfo-l{grid-column:1/span 5;display:grid;gap:var(--s4);justify-items:start;align-content:start}
 .cinfo dl{grid-column:7/span 6;margin:0}
 .cinfo dl>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:var(--gap);padding-block:18px 22px;border-top:1px solid var(--ln)}

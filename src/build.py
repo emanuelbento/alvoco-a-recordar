@@ -509,6 +509,38 @@ rostos = head('Rostos Alvocenses, Alvôco a Recordar', 'Rostos Alvocenses: uma f
 rosto = head('Rostos Alvocenses', 'Um registo da série Rostos Alvocenses.', 'rosto') + '<main id="main" data-page="rosto" data-tema=""><div id="artigo"></div></main>' + foot() + end()
 
 # ---------------- CAMINHADA ----------------
+
+def _village():
+    # Alvoco das Varzeas at night: a terraced cluster of houses on the shoulder above the river, the parish church tower,
+    # lit windows and street lamps. Silhouettes share the colour of the ridge they stand on (r2), so they turn grey at dawn with it.
+    houses = [(604,22,18,'r'),(624,18,24,'l'),(640,26,16,'r'),(664,20,26,'l'),(682,24,20,'r'),(704,18,30,'r'),(720,26,22,'l'),(744,22,18,'r'),(762,20,24,'l'),(780,18,16,'r')]
+    g = lambda x: 690 - (x - 600) * .1
+    d, win = [], []
+    for i,(x,w,h,k) in enumerate(houses):
+        b = g(x + w/2) + 3; t = b - h; r = 7 if w > 20 else 6
+        d.append(f'M{x} 760V{t}l{w/2:.1f} -{r}l{w/2:.1f} {r}V760z')
+        for j,(wx,wy) in enumerate([(x+4,t+5),(x+w-8,t+5),(x+w/2-1.5,t+12)]):
+            if (i*3+j) % 4 != 1 and wy + 5 < b: win.append(f'<rect x="{wx:.1f}" y="{wy:.1f}" width="3" height="4"/>')
+    # church: nave with a square tower and a short spire, slightly above the houses
+    cx = 692; cb = g(cx) - 2
+    d.append(f'M{cx} 760V{cb-14}l9 -6 9 6V760z M{cx+18} 760V{cb-40}l6 -12 6 12V760z')
+    win.append(f'<rect x="{cx+22.5:.1f}" y="{cb-34:.1f}" width="3" height="5"/>')
+    lamps = ''.join(f'<circle cx="{x}" cy="{g(x)+5:.1f}" r="1.8"/>' for x in (612,650,698,736,772))
+    return (f'<path class="vil" fill="#070d0b" d="{" ".join(d)}"/>'
+            f'<g class="lights" fill="#ffcf7a">{"".join(win)}{lamps}</g>')
+
+def _chapel():
+    # Capela da Senhora das Necessidades, side on: nave with a pitched roof, lower apse at the back,
+    # bell gable with a cross at the front. The base goes into the ground and a patch of summit covers it.
+    x, b = 966, 466
+    nave = f'M{x} {b+6}V{b-17}l17 -9 17 9V{b+6}z'
+    apse = f'M{x+34} {b+6}V{b-11}h9l3 4V{b+6}z'
+    gable = f'M{x-4} {b+6}V{b-24}l6 -6 6 6V{b+6}z'
+    cross = f'M{x+1.2} {b-29}h1.6v-9h-1.6z M{x-1} {b-35}h6v1.6h-6z'
+    ground = f'M{x-34} {b+18}C{x-16} {b+4} {x-6} {b} {x+20} {b} S{x+56} {b+2} {x+84} {b+26}V{b+60}H{x-34}z'
+    return (f'<path class="chp" fill="#050a08" d="{nave} {apse} {gable} {cross}"/>'
+            f'<path class="r2c" fill="#070d0b" d="{ground}"/>')
+
 r = lambda pts: smooth(pts, 900)
 caminhada = head('Caminhada Noturna ao Colcurinho, Alvôco a Recordar', 'Da Ponte Medieval de Alvoco das Várzeas ao topo do Colcurinho, às duas da manhã, para ver o dia nascer. Na noite de 14 para 15 de agosto.', 'caminhada') + f'''
 <main id="main" data-page="caminhada" data-tema="claro" data-cls="nt-bg">
@@ -524,15 +556,14 @@ caminhada = head('Caminhada Noturna ao Colcurinho, Alvôco a Recordar', 'Da Pont
     <svg class="land" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
       <path id="r4" fill="#0b1411" d="{r([(0,540),(140,500),(270,528),(410,452),(560,486),(700,418),(860,458),(1010,408),(1160,448),(1310,416),(1460,460),(1600,438)])}"/>
       <path id="r3" fill="#09110e" d="{r([(0,612),(170,568),(330,598),(480,540),(640,580),(780,522),(900,508),(1040,548),(1200,508),(1360,556),(1600,528)])}"/>
-      <path id="r2" fill="#070d0b" d="{r([(0,760),(190,702),(370,730),(550,654),(700,606),(830,532),(920,480),(980,458),(1040,478),(1130,540),(1280,598),(1440,634),(1600,618)])}"/>
+      <path id="r2" fill="#070d0b" d="{r([(0,760),(190,702),(370,728),(500,700),(620,688),(740,676),(850,590),(915,500),(952,468),(986,464),(1018,468),(1052,492),(1130,540),(1280,598),(1440,634),(1600,618)])}"/>
       <path id="r1" fill="#050a08" d="{r([(0,814),(180,786),(330,806),(480,780),(620,812),(780,792),(960,826),(1160,800),(1360,832),(1600,812)])}"/>
       <path id="r0" fill="#030605" d="{r([(0,862),(260,844),(520,858),(820,846),(1100,866),(1380,850),(1600,862)])}"/>
-      <g class="lights" fill="#ffcf7a" transform="translate(330 -6)"><circle cx="120" cy="850" r="2.6"/><circle cx="142" cy="843" r="2"/><circle cx="168" cy="853" r="2.4"/><circle cx="196" cy="847" r="2"/><circle cx="214" cy="857" r="2.6"/><circle cx="240" cy="850" r="1.8"/><circle cx="98" cy="857" r="2"/><circle cx="262" cy="858" r="2.2"/></g>
-      <path transform="translate(330 -6)" d="M150 874a14 14 0 0 1 28 0M184 874a14 14 0 0 1 28 0M146 874h70" fill="none" stroke="#2a3a30" stroke-width="3"/>
-      <path id="trail" d="M510 862C560 840 590 812 630 790S700 760 730 732 780 690 810 664 850 620 870 590 905 540 925 512 960 474 980 460" fill="none" stroke="#ffd38a" stroke-width="2.4" stroke-dasharray="1 7" stroke-linecap="round"/>
+      {_village()}
+      <path id="trail" d="M700 690C724 684 748 676 772 660S818 622 842 596 878 552 898 526 924 494 942 480 962 470 972 466" fill="none" stroke="#ffd38a" stroke-width="2.4" stroke-dasharray="1 7" stroke-linecap="round"/>
       <g class="lamps">{''.join('<circle class="walker" r="3.4" fill="#ffe2a6" opacity="0"/>' for _ in range(6))}</g>
-      <g fill="#050a08"><rect x="966" y="436" width="28" height="22"/><path d="M962 438l18-14 18 14z"/><rect x="979" y="414" width="2" height="10"/><rect x="975" y="417" width="10" height="2"/></g>
-      <circle id="summit" cx="980" cy="430" r="1" fill="none"/>
+      {_chapel()}
+      <circle id="summit" cx="988" cy="418" r="1" fill="none"/>
     </svg>
     <div class="fog" style="top:58%" aria-hidden="true"></div><div class="fog" style="top:65%;left:-35%" aria-hidden="true"></div>
     <div class="cap-s">
