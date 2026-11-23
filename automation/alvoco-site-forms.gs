@@ -18,6 +18,8 @@
 const P = PropertiesService.getScriptProperties();
 const TZ = 'Europe/Lisbon';
 const NOME = 'Associação Alvôco a Recordar';
+// Name of the member number column in Notion. If it is renamed in Notion, change it here too.
+const COL_NUMERO = 'N.º sócio';
 // Images for the welcome email, in the public repository, served by jsDelivr at a fixed commit (email clients do not show SVG)
 const IMG = 'https://cdn.jsdelivr.net/gh/emanuelbento/alvoco-a-recordar@cc64412d26cc75ea11a5009bd25b3c770ee6e7b0/site/';
 const PAGAMENTOS = { 'MB WAY': 'MB WAY', 'Transferência bancária': 'Transferência bancária', 'Em mão, em Alvoco': 'Em mão', 'Em mão': 'Em mão' };
@@ -48,20 +50,19 @@ function socio(d) {
   let numero, page;
   try {
     const dup = notion('databases/' + P.getProperty('DB_SOCIOS') + '/query', { page_size: 1, filter: { and: [{ property: 'Email', email: { equals: email } }, { property: 'Estado', select: { does_not_equal: 'Sem efeito' } }] } });
-    if (dup.results.length) return { ok: true, numero: dup.results[0].properties['N.º de sócio'].number, repetido: true };
+    if (dup.results.length) return { ok: true, numero: dup.results[0].properties[COL_NUMERO].number, repetido: true };
 
     numero = proximoNumero();
     page = notion('pages', { parent: { database_id: P.getProperty('DB_SOCIOS') }, properties: {
       'Nome completo': { title: [{ text: { content: completo } }] },
-      'N.º de sócio': { number: numero },
+      [COL_NUMERO]: { number: numero },
       'Estado': { select: { name: 'Novo' } },
       'Origem': { select: { name: 'Site' } },
       'Data do pedido': { date: { start: hoje() } },
       'Email': { email: email },
       'Telemóvel': { phone_number: clean(d.telemovel) || null },
       'Data de nascimento': { date: nascimento(d) },
-      'Natural de': txt(d.natural), 'Morada': txt(d.morada), 'Código postal': txt(d.cp), 'Localidade': txt(d.localidade),
-      'País': txt(d.pais),
+      'Natural de': txt(d.natural), 'Morada': txt(d.morada), 'Código postal': txt(d.cp), 'Localidade': txt([clean(d.localidade), /^portugal$/i.test(clean(d.pais)) ? '' : clean(d.pais)].filter(Boolean).join(', ')),
       'NIF': txt(d.nif),
       'Pagamento preferido': { select: PAGAMENTOS[clean(d.pagamento)] ? { name: PAGAMENTOS[clean(d.pagamento)] } : null },
       'Declaração aceite': { checkbox: true }, 'Consentimento de dados': { checkbox: true }
@@ -157,9 +158,9 @@ function testarEmail() {
 /** The next member number: one more than the highest ever given. Numbers are never reused. */
 function proximoNumero() {
   const r = notion('databases/' + P.getProperty('DB_SOCIOS') + '/query', { page_size: 1,
-    filter: { property: 'N.º de sócio', number: { is_not_empty: true } },
-    sorts: [{ property: 'N.º de sócio', direction: 'descending' }] });
-  return (r.results.length ? r.results[0].properties['N.º de sócio'].number : 0) + 1;
+    filter: { property: COL_NUMERO, number: { is_not_empty: true } },
+    sorts: [{ property: COL_NUMERO, direction: 'descending' }] });
+  return (r.results.length ? r.results[0].properties[COL_NUMERO].number : 0) + 1;
 }
 
 /** Run this from the editor after filling the Script properties. It only reads: no record, no email. */

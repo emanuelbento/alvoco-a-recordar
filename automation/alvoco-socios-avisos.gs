@@ -215,11 +215,11 @@ function testarAvisos() {
 function socios() {
   const out = []; let cursor;
   do {
-    const r = notion('databases/' + P.getProperty('DB_SOCIOS') + '/query', Object.assign({ page_size: 100, filter: { property: 'N.º de sócio', number: { is_not_empty: true } } }, cursor ? { start_cursor: cursor } : {}));
+    const r = notion('databases/' + P.getProperty('DB_SOCIOS') + '/query', Object.assign({ page_size: 100, filter: { property: COL_NUMERO, number: { is_not_empty: true } } }, cursor ? { start_cursor: cursor } : {}));
     r.results.forEach(pg => {
       const pr = pg.properties, nome = texto(pr['Nome completo']);
       out.push({
-        id: pg.id, numero: pr['N.º de sócio'].number, nome, proprio: nome.split(' ')[0],
+        id: pg.id, numero: pr[COL_NUMERO].number, nome, proprio: nome.split(' ')[0],
         email: clean(pr['Email'] && pr['Email'].email).toLowerCase(),
         estado: pr['Estado'] && pr['Estado'].select ? pr['Estado'].select.name : '',
         joia: !!(pr['Joia'] && pr['Joia'].checkbox),
