@@ -47,9 +47,17 @@ function prepararAvisos() {
   console.log('Pronto. Registos marcados como já tratados: ' + n + '. Acionador de hora a hora instalado.');
 }
 
-/** The hourly job. Safe to run by hand: nothing is sent twice. */
-function avisos() {
-  const agora = new Date(), hora = +Utilities.formatDate(agora, TZ, 'H'), hoje_ = hoje();
+/** The hourly job. Safe to run by hand: nothing is sent twice.
+ *  sim (optional, for simulations only): { hoje: 'yyyy-MM-dd', hora: 0-23, para: 'email' }.
+ *  In a simulation nothing changes in Notion and every email goes to sim.para instead of the member. */
+function avisos(sim) {
+  sim = sim && sim.hoje ? sim : null;
+  const hora = sim ? sim.hora : +Utilities.formatDate(new Date(), TZ, 'H'), hoje_ = sim ? sim.hoje : hoje();
+  const relatorio = [];
+  const enviar = (s, m) => { relatorio.push('N.º ' + n3(s.numero) + ' ' + s.nome + ': ' + m.assunto);
+    GmailApp.sendEmail(sim ? sim.para : s.email, (sim ? '[simulação ' + hoje_ + ', para ' + s.email + '] ' : '') + m.assunto, m.texto, { name: NOME, htmlBody: m.html }); };
+  const atualizar = (id, properties) => { if (!sim) notion('pages/' + id, { properties }, 'patch'); };
+  const diasDesde = iso => Math.floor((new Date(hoje_ + 'T00:00:00Z') - new Date(iso.slice(0, 10) + 'T00:00:00Z')) / 864e5);
   const ano = +hoje_.slice(0, 4), deHoras = hora >= HORAS[0] && hora <= HORAS[1];
   const expirados = [];
   socios().forEach(s => {
@@ -96,13 +104,25 @@ function avisos() {
     } catch (err) { console.error('Sócio ' + s.numero + ': ' + err); }
   });
   if (expirados.length) {
-    GmailApp.sendEmail(P.getProperty('EMAIL_DIRECAO'), 'Pedidos de sócio sem joia há mais de ' + JOIA_DIAS + ' dias',
+    relatorio.push('Direção: ' + expirados.length + ' pedido(s) sem joia há mais de ' + JOIA_DIAS + ' dias');
+    GmailApp.sendEmail(sim ? sim.para : P.getProperty('EMAIL_DIRECAO'), 'Pedidos de sócio sem joia há mais de ' + JOIA_DIAS + ' dias',
       'Estes pedidos passaram o prazo da joia. Se não houver notícias, muda o Estado para "Sem efeito" no Notion (o número não volta a ser usado).\n\n' +
       expirados.map(s => 'N.º ' + s.numero + ': ' + s.nome + ' (' + s.email + '), pedido a ' + s.pedido).join('\n'), { name: NOME });
   }
   // Next year's quota column, ready before January
-  if (hoje_.slice(5) >= '12-01') garantirColuna('Quota ' + (ano + 1));
+  if (!sim && hoje_.slice(5) >= '12-01') garantirColuna('Quota ' + (ano + 1));
+  console.log((sim ? 'Simulação de ' + hoje_ + ' às ' + hora + 'h. ' : '') + (relatorio.length ? relatorio.length + ' email(s):\n' + relatorio.join('\n') : 'Nenhum email a enviar.'));
 }
+
+/* ---------- simulations: change the date, run, read the log. Emails come to you, Notion is not touched. ---------- */
+
+function simular(data, hora) { avisos({ hoje: data, hora: hora === undefined ? 10 : hora, para: Session.getActiveUser().getEmail() }); }
+function simularJoia7Dias()      { simular(somarDias(hoje(), 7)); }
+function simularJoia25Dias()     { simular(somarDias(hoje(), 25)); }
+function simularJoia31Dias()     { simular(somarDias(hoje(), 31)); }
+function simularAvisoQuota()     { simular((anoAtual() + 1) + '-03-16'); }
+function simularQuotaEmAtraso()  { simular((anoAtual() + 1) + '-04-02'); }
+function somarDias(iso, n) { const d = new Date(iso + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
 
 /* ---------- emails ---------- */
 
@@ -169,7 +189,6 @@ function formasPagamento() {
   return f;
 }
 
-function enviar(s, m) { GmailApp.sendEmail(s.email, m.assunto, m.texto, { name: NOME, htmlBody: m.html }); }
 
 /** Sends every automatic email to the account running the script, with a sample member. Nothing changes in Notion. */
 function testarAvisos() {
@@ -205,7 +224,7 @@ function socios() {
   return out;
 }
 
-function atualizar(id, properties) { notion('pages/' + id, { properties }, 'patch'); }
+function atualizar(id, properties) { notion('pages/' + id, { properties }, 'patch'); }   // used by prepararAvisos
 
 function garantirColuna(nome) {
   const db = notion('databases/' + P.getProperty('DB_SOCIOS'), null, 'get');
@@ -219,7 +238,6 @@ const rt = v => ({ rich_text: [{ text: { content: v } }] });
 const pad = v => String(v).padStart(2, '0');
 const n3 = v => String(v).padStart(3, '0');
 const anoAtual = () => +Utilities.formatDate(new Date(), TZ, 'yyyy');
-const diasDesde = iso => Math.floor((new Date(hoje() + 'T00:00:00Z') - new Date(iso.slice(0, 10) + 'T00:00:00Z')) / 864e5);
 
 /** The joia pays the year of entry; from 1 October it also pays the next year. */
 function cobertoPelaJoia(s, ano) {
