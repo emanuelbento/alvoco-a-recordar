@@ -46,6 +46,12 @@ function prepararAvisos() {
   console.log('Pronto. Registos marcados como já tratados: ' + n + '.');
 }
 
+/** Stops the automatic emails (for example while the real member list is being imported). prepararAvisos turns them back on. */
+function pausarAvisos() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'avisos').forEach(t => ScriptApp.deleteTrigger(t));
+  console.log('Avisos em pausa. Nenhum email automático sai até correres prepararAvisos.');
+}
+
 /** Runs avisos every 5 minutes, so a ticked joia gets its welcome within 5 minutes. Safe to run again: it replaces the old trigger and touches nothing in Notion. */
 function instalarAcionador() {
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'avisos').forEach(t => ScriptApp.deleteTrigger(t));
