@@ -145,7 +145,7 @@ function boasVindas(proprio, numero, completo) {
     (livre || ('Falta só a joia: 10 € no ano em que entras, e a partir daí 5 € por ano.\n\n' + formas.map(([k, v]) => k + ': ' + v.replace('<br>', ', ')).join('\n') +
     '\n\nPõe o teu número de sócio no descritivo, para sabermos de quem é.')) +
     '\n\nQuando o pagamento chegar, confirmamos por email.\n\nObrigado por caminhares connosco, na serra e na vida da aldeia.\n\n' + NOME + '\nAlvoco das Várzeas';
-  return { assunto: 'O n.º ' + numero + ' da Alvôco a Recordar é teu', texto, html };
+  return { assunto: 'O n.º ' + numero + ' do Alvôco a Recordar é teu', texto, html };
 }
 
 /** Run this from the editor to see the welcome email in your own inbox. No record in Notion. */
