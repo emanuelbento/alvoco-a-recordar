@@ -66,10 +66,16 @@ function instalarAcionador() {
  *  In a simulation nothing changes in Notion and every email goes to sim.para instead of the member. */
 function avisos(sim) {
   sim = sim && sim.hoje ? sim : null;
+  const trinco = LockService.getScriptLock(); if (!trinco.tryLock(1000)) return;   // a previous run is still going
+  try { correrAvisos(sim); } finally { trinco.releaseLock(); }
+}
+
+function correrAvisos(sim) {
   const hora = sim ? sim.hora : +Utilities.formatDate(new Date(), TZ, 'H'), hoje_ = sim ? sim.hoje : hoje();
   const relatorio = [];
   const enviar = (s, m) => { relatorio.push('N.º ' + n3(s.numero) + ' ' + s.nome + ': ' + m.assunto + (s.email ? '' : ' (sem email, não enviado)')); if (!s.email) return;
-    GmailApp.sendEmail(sim ? sim.para : s.email, (sim ? '[simulação ' + hoje_ + ', para ' + s.email + '] ' : '') + m.assunto, m.texto, { name: NOME, htmlBody: m.html }); };
+    GmailApp.sendEmail(sim ? sim.para : s.email, (sim ? '[simulação ' + hoje_ + ', para ' + s.email + '] ' : '') + m.assunto, m.texto, Object.assign({ name: NOME, htmlBody: m.html }, m.anexo ? { attachments: [m.anexo] } : {})); };
+  const guardarRecibo = (s, r) => (s.recibos ? s.recibos + '\n' : '') + r.linha;
   const atualizar = (id, properties) => { if (!sim) notion('pages/' + id, { properties }, 'patch'); };
   const diasDesde = iso => Math.floor((new Date(hoje_ + 'T00:00:00Z') - new Date(iso.slice(0, 10) + 'T00:00:00Z')) / 864e5);
   const ano = +hoje_.slice(0, 4), deHoras = hora >= HORAS[0] && hora <= HORAS[1];
@@ -80,8 +86,9 @@ function avisos(sim) {
     try {
       // 1. joia ticked: welcome
       if (s.joia && !s.confirmada) {
-        enviar(s, emailAtivo(s));
-        const upd = { 'Confirmação enviada': { checkbox: true }, 'Estado': { select: { name: 'Ativo' } } };
+        const r = recibo(Object.assign({}, s, { admissao: s.admissao || hoje_ }), 'joia', +(s.admissao || hoje_).slice(0, 4), !!sim);
+        enviar(s, Object.assign(emailAtivo(s), { anexo: r.pdf }));
+        const upd = { 'Confirmação enviada': { checkbox: true }, 'Estado': { select: { name: 'Ativo' } }, 'Recibos': rt(guardarRecibo(s, r)) };
         if (!s.admissao) upd['Data de admissão'] = { date: { start: hoje_ } };
         atualizar(s.id, upd);
         return;
@@ -100,8 +107,9 @@ function avisos(sim) {
       const etapa = etapaQuota(s.aviso, ano);
       if (s.quota(ano)) {
         if (etapa !== 'ok') {
-          enviar(s, emailQuotaRecebida(s, ano));   // every quota ticked gets its receipt, like the joia
-          const upd = { 'Avisos de quota': rt(marcarQuota(s.aviso, ano, 'ok')) };
+          const r = recibo(s, 'quota', ano, !!sim);
+          enviar(s, Object.assign(emailQuotaRecebida(s, ano), { anexo: r.pdf }));   // every quota ticked gets its receipt, like the joia
+          const upd = { 'Avisos de quota': rt(marcarQuota(s.aviso, ano, 'ok')), 'Recibos': rt(guardarRecibo(s, r)) };
           if (s.estado === 'Quota em atraso') upd['Estado'] = { select: { name: 'Ativo' } };
           atualizar(s.id, upd);
         }
@@ -132,7 +140,7 @@ function avisos(sim) {
       relatorio.push('Direção: ' + faltam.length + ' quota(s) de ' + ano + ' por pagar');
       GmailApp.sendEmail(sim ? sim.para : P.getProperty('EMAIL_DIRECAO'), 'Quotas de ' + ano + ' por pagar: ' + faltam.length,
         'O prazo acabou a 31 de março. Estes sócios ainda não têm o visto na Quota ' + ano + '. Quem tem email já recebeu o aviso; os outros só a Direção pode contactar.\n\n' +
-        faltam.map(s => 'N.º ' + n3(s.numero) + ': ' + s.nome + (s.email ? '' : ' (sem email)')).join('\n'), { name: NOME });
+        faltam.map(s => 'N.º ' + n3(s.numero) + ': ' + s.nome + (s.email ? '' : ' (sem email)' + (s.telemovel ? '\n   WhatsApp, já com a mensagem escrita: ' + whatsapp(s, ano) : ''))).join('\n'), { name: NOME });
     }
     if (!sim) P.setProperty(chaveResumo, hoje_);
   }
@@ -157,7 +165,7 @@ function emailAtivo(s) {
   const prox = cobertoPelaJoia(s, anoAtual() + 1) ? anoAtual() + 2 : anoAtual() + 1;
   return molde(s, 'A tua inscrição no Alvôco a Recordar está ativa', [
     'Olá, ' + s.proprio + '.',
-    'Recebemos a joia. A partir de hoje és sócio do Alvôco a Recordar, com o número <b>' + n3(s.numero) + '</b>.',
+    'Recebemos a joia. A partir de hoje és sócio do Alvôco a Recordar, com o número <b>' + n3(s.numero) + '</b>. O recibo segue em anexo.',
     'Boas-vindas à família. Vais receber notícias da Caminhada Noturna, dos almoços e de tudo o que fizermos em Alvoco.',
     'A próxima quota, de <b>' + QUOTA + ' €</b>, é a de ' + prox + ' e paga-se até 31 de março desse ano. Nós lembramos.'
   ], false);
@@ -184,7 +192,7 @@ function emailQuota(s, ano, atraso) {
 function emailQuotaRecebida(s, ano) {
   return molde(s, 'Quota de ' + ano + ' recebida', [
     'Olá, ' + s.proprio + '.',
-    'Recebemos a tua quota de ' + ano + '. Está tudo em dia.',
+    'Recebemos a tua quota de ' + ano + '. Está tudo em dia. O recibo segue em anexo.',
     'Obrigado por continuares a caminhar connosco.'
   ], false);
 }
@@ -241,6 +249,8 @@ function socios() {
         confirmada: !!(pr['Confirmação enviada'] && pr['Confirmação enviada'].checkbox),
         lembretes: (pr['Lembretes de joia'] && pr['Lembretes de joia'].number) || 0,
         aviso: texto(pr['Avisos de quota']),
+        nif: texto(pr['NIF']), recibos: texto(pr['Recibos']),
+        telemovel: clean(pr['Telemóvel'] && pr['Telemóvel'].phone_number),
         pedido: pr['Data do pedido'] && pr['Data do pedido'].date ? pr['Data do pedido'].date.start : '',
         admissao: pr['Data de admissão'] && pr['Data de admissão'].date ? pr['Data de admissão'].date.start : '',
         quota: ano => !!(pr['Quota ' + ano] && pr['Quota ' + ano].checkbox)
@@ -259,6 +269,15 @@ function garantirColuna(nome) {
 }
 
 /* ---------- small helpers ---------- */
+
+/** Free alternative to SMS: a WhatsApp link with the reminder already written. The board taps it and presses send. */
+function whatsapp(s, ano) {
+  let n = String(s.telemovel).replace(/[^\d+]/g, '').replace(/^00/, '+');
+  if (!n.startsWith('+')) n = (n.length === 9 ? '351' : '') + n; else n = n.slice(1);
+  const msg = 'Olá, ' + s.proprio + '. Daqui fala o Alvôco a Recordar. A tua quota de ' + ano + ' (' + QUOTA + ' €) ainda está por pagar. ' +
+    'Podes pagar por MB WAY ou transferência, com o n.º de sócio ' + n3(s.numero) + ' na descrição. Obrigado!';
+  return 'https://wa.me/' + n + '?text=' + encodeURIComponent(msg);
+}
 
 // "Avisos de quota" keeps one step per year, for example "2027:ok 2028:aviso"
 const etapaQuota = (txt, ano) => { const m = String(txt || '').match(new RegExp('(^|\\s)' + ano + ':(\\w+)')); return m ? m[2] : ''; };
