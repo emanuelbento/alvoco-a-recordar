@@ -10,7 +10,10 @@
  *   DB_SOCIOS        id of the "Sócios" database
  *   DB_MENSAGENS     id of the "Mensagens do site" database
  *   EMAIL_DIRECAO    address that is told about every new member and message
- *   TEXTO_PAGAMENTO  paragraph with the amount and how to pay, written by the board
+ *   MBWAY            number for MB WAY payments (leave empty if the board does not use it)
+ *   IBAN             the association's IBAN
+ *   TEXTO_PAGAMENTO  optional: replaces the payment block with a text of the board's own.
+ *                    Script properties keep one line, so write it without line breaks.
  */
 const P = PropertiesService.getScriptProperties();
 const TZ = 'Europe/Lisbon';
@@ -33,8 +36,9 @@ function doPost(e) {
 }
 
 function socio(d) {
-  const nome = clean(d.nome), apelido = clean(d.apelido), email = clean(d.email).toLowerCase();
-  if (!nome || !apelido || !isEmail(email) || !d.declaro || !d.dados) return { ok: false, erro: 'Faltam dados obrigatórios.' };
+  // The site sends the full name in "nome". Older pages sent "nome" and "apelido" apart: both work.
+  const completo = clean([d.nome, d.apelido].filter(Boolean).join(' ')), proprio = completo.split(' ')[0], email = clean(d.email).toLowerCase();
+  if (completo.split(' ').length < 2 || !isEmail(email) || !d.declaro || !d.dados) return { ok: false, erro: 'Faltam dados obrigatórios.' };
 
   // One number per person: a second submit with the same email gets the number already given.
   const lock = LockService.getScriptLock();
@@ -46,7 +50,7 @@ function socio(d) {
 
     numero = proximoNumero();
     page = notion('pages', { parent: { database_id: P.getProperty('DB_SOCIOS') }, properties: {
-      'Nome completo': { title: [{ text: { content: nome + ' ' + apelido } }] },
+      'Nome completo': { title: [{ text: { content: completo } }] },
       'N.º de sócio': { number: numero },
       'Estado': { select: { name: 'Novo' } },
       'Origem': { select: { name: 'Site' } },
@@ -66,13 +70,10 @@ function socio(d) {
 
   // The record exists from here on. A mail failure must not turn a saved member into an error on the site.
   try {
-    const pagar = P.getProperty('TEXTO_PAGAMENTO') || 'A Direção envia-te os dados para pagamento por email.';
-    GmailApp.sendEmail(email, 'És o sócio n.º ' + numero + ' da Alvôco a Recordar',
-      'Olá, ' + nome + '.\n\nRecebemos o teu pedido. O teu número de sócio é o ' + numero + '. É teu a partir de hoje e não muda.\n\n' + pagar +
-      '\n\nQuando o pagamento chegar, confirmamos por email.\n\nObrigado por caminhares connosco, na serra e na vida da aldeia.\n\n' + NOME + '\nAlvoco das Várzeas',
-      { name: NOME });
-    GmailApp.sendEmail(P.getProperty('EMAIL_DIRECAO'), 'Novo sócio n.º ' + numero + ': ' + nome + ' ' + apelido,
-      nome + ' ' + apelido + ' inscreveu-se no site e ficou com o n.º ' + numero + '.\n\nEmail: ' + email + '\nLocalidade: ' + clean(d.localidade) + '\nPagamento preferido: ' + clean(d.pagamento) +
+    const m = boasVindas(proprio, numero);
+    GmailApp.sendEmail(email, m.assunto, m.texto, { name: NOME, htmlBody: m.html });
+    GmailApp.sendEmail(P.getProperty('EMAIL_DIRECAO'), 'Novo sócio n.º ' + numero + ': ' + completo,
+      completo + ' inscreveu-se no site e ficou com o n.º ' + numero + '.\n\nEmail: ' + email + '\nLocalidade: ' + clean(d.localidade) + '\nPagamento preferido: ' + clean(d.pagamento) +
       '\n\nRegisto no Notion: ' + page.url + '\n\nQuando o pagamento entrar, marca o visto em Joia e muda o estado para Ativo.',
       { name: NOME, replyTo: email });
   } catch (err) { console.error(err); }
@@ -97,6 +98,43 @@ function contacto(d) {
       msg + '\n\n' + nome + '\n' + email + '\n\nRegisto no Notion: ' + page.url, { name: NOME, replyTo: email });
   } catch (err) { console.error(err); }
   return { ok: true };
+}
+
+/** Welcome email: plain text for old clients, HTML for everyone else. The payment block comes from Script properties. */
+function boasVindas(proprio, numero) {
+  const mbway = clean(P.getProperty('MBWAY')), iban = clean(P.getProperty('IBAN')), livre = clean(P.getProperty('TEXTO_PAGAMENTO'));
+  const formas = [];
+  if (mbway) formas.push(['MB WAY', mbway]);
+  if (iban) formas.push(['Transferência', iban + '<br>em nome da ' + NOME]);
+  formas.push(['Em mão', 'a qualquer pessoa da Direção, da próxima vez que estiveres em Alvoco']);
+  const esc = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const p = t => '<p style="margin:0 0 16px">' + t + '</p>';
+  const linhas = formas.map(([k, v]) => '<tr><td style="padding:10px 16px 10px 0;vertical-align:top;font-weight:600;white-space:nowrap">' + k + '</td><td style="padding:10px 0;vertical-align:top">' + v + '</td></tr>').join('');
+  const pagamento = livre ? p(esc(livre)) :
+    p('Falta só a joia: <b>10 €</b> no ano em que entras, e a partir daí <b>5 €</b> por ano. Escolhe a forma que te der mais jeito:') +
+    '<table role="presentation" style="border-collapse:collapse;width:100%;margin:0 0 16px;border-top:1px solid #d6dccf">' + linhas.replace(/<tr>/g, '<tr style="border-bottom:1px solid #d6dccf">') + '</table>' +
+    p('Põe o teu número de sócio, <b>' + numero + '</b>, no descritivo, para sabermos de quem é.');
+  const html = '<div style="background:#eceee6;padding:32px 16px;font-family:Helvetica,Arial,sans-serif;color:#14201a;font-size:16px;line-height:1.55">' +
+    '<div style="max-width:520px;margin:0 auto;background:#f6f8f3;padding:32px 28px">' +
+    '<p style="margin:0 0 4px;font-size:13px;color:#476949">Cartão de sócio</p>' +
+    '<p style="margin:0 0 24px;font-size:56px;line-height:1;font-weight:800;color:#476949;letter-spacing:-1px">' + String(numero).padStart(4, '0') + '</p>' +
+    p('Olá, ' + esc(proprio) + '.') +
+    p('Recebemos o teu pedido. O teu número de sócio é o <b>' + numero + '</b>. É teu a partir de hoje e não muda.') +
+    pagamento +
+    p('Quando o pagamento chegar, confirmamos por email.') +
+    p('Obrigado por caminhares connosco, na serra e na vida da aldeia.') +
+    '<p style="margin:24px 0 0;font-size:14px;color:#4b5a50">' + NOME + '<br>Alvoco das Várzeas</p></div></div>';
+  const texto = 'Olá, ' + proprio + '.\n\nRecebemos o teu pedido. O teu número de sócio é o ' + numero + '. É teu a partir de hoje e não muda.\n\n' +
+    (livre || ('Falta só a joia: 10 € no ano em que entras, e a partir daí 5 € por ano.\n\n' + formas.map(([k, v]) => k + ': ' + v.replace('<br>', ', ')).join('\n') +
+    '\n\nPõe o teu número de sócio no descritivo, para sabermos de quem é.')) +
+    '\n\nQuando o pagamento chegar, confirmamos por email.\n\nObrigado por caminhares connosco, na serra e na vida da aldeia.\n\n' + NOME + '\nAlvoco das Várzeas';
+  return { assunto: 'O n.º ' + numero + ' da Alvôco a Recordar é teu', texto, html };
+}
+
+/** Run this from the editor to see the welcome email in your own inbox. No record in Notion. */
+function testarEmail() {
+  const m = boasVindas('Teste', 45);
+  GmailApp.sendEmail(Session.getActiveUser().getEmail(), '[teste] ' + m.assunto, m.texto, { name: NOME, htmlBody: m.html });
 }
 
 /** The next member number: one more than the highest ever given. Numbers are never reused. */

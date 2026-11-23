@@ -259,6 +259,7 @@ function cardInit(wrap, persistent){
 /* ---------- forms ---------- */
 const RULES = {
   req: v => v.trim() ? '' : 'Falta preencher este campo.',
+  nome: v => !v.trim() ? 'Falta preencher este campo.' : v.trim().split(/\s+/).length < 2 ? 'Escreve o nome completo, com os apelidos.' : '',
   email: v => !v.trim() ? 'Falta o email.' : /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) ? '' : 'Este email não parece completo.',
   tel: v => !v.trim() ? 'Falta o telemóvel.' : v.replace(/\D/g, '').length >= 9 ? '' : 'O número precisa de pelo menos 9 dígitos.',
   cp: (v, f) => { if (!v.trim()) return 'Falta o código postal.'; const p = (f.querySelector('[name=pais]') || {}).value; return p && p !== 'Portugal' ? '' : /^\d{4}-\d{3}$/.test(v.trim()) ? '' : 'Usa o formato 0000-000.'; },
@@ -320,7 +321,7 @@ function drawer(){
   let cur = 0, last = null, isOpen = false;
   liveForm(f); $$('.member-card_wrap', dw).forEach(c => cardInit(c, true));
   const names = $$('.member-card_name', dw);
-  const full = () => [f.nome.value.trim(), f.apelido.value.trim()].filter(Boolean).join(' ');
+  const full = () => f.nome.value.trim().replace(/\s+/g, ' ');
   const load = () => { const d = draft(); Object.entries(d).forEach(([k, v]) => $$(`[name="${k}"]`, f).forEach(el => { if (el.type === 'checkbox' || el.type === 'radio') el.checked = [].concat(v).includes(el.value); else el.value = v; })); };
   const save = () => { const d = {}; new FormData(f).forEach((v, k) => { d[k] = v; }); ss.set(KEY, JSON.stringify(d)); return d; };
   const setCard = () => { const n = full() || 'O teu nome'; names.forEach(el => { el.textContent = n; }); };
@@ -344,16 +345,18 @@ function drawer(){
     RM ? sw() : gsap.to(a, { opacity: 0, x: -36 * dir, duration: .28, ease: 'power2.in', onComplete: sw }); };
   f.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) step(+b.dataset.go); });
   // n is the member number the endpoint assigned. Without an endpoint (prototype) the number follows by email.
-  const finish = (d, n) => { f.hidden = true; foot.hidden = true; done.hidden = false; $('.drawer_progress', dw).hidden = true; lab.textContent = 'Pedido enviado'; side.forEach(li => { li.classList.remove('on'); li.classList.add('ok'); });
-    $('.drawer_done-name', done).textContent = d.nome.trim(); $('.drawer_done-mail', done).textContent = d.email || ''; body.scrollTop = 0;
+  const finish = (d, n, rep) => { f.hidden = true; foot.hidden = true; done.hidden = false; $('.drawer_progress', dw).hidden = true; lab.textContent = 'Pedido enviado'; side.forEach(li => { li.classList.remove('on'); li.classList.add('ok'); });
+    $('.drawer_done-name', done).textContent = d.nome.trim().split(/\s+/)[0]; $('.drawer_done-mail', done).textContent = d.email || ''; body.scrollTop = 0;
     if (n) { const c = $('.drawer_done-card .member-card_number-value', done); if (c) { c.textContent = String(n).padStart(4, '0'); $$('.drawer_done-card .is-pending', done).forEach(x => x.classList.remove('is-pending')); c.classList.remove('is-pending'); } $('.drawer_done-text', done).textContent = 'És o sócio n.º ' + n + '. O número é teu e não muda.'; }
+    // the same email twice keeps its number: no new record, no new email
+    if (rep) { $('.drawer_done-text', done).textContent = 'Este email já tinha um pedido. O teu número continua a ser o ' + n + ' e não enviámos nada de novo.'; $$('ol', done).forEach(x => { x.hidden = true; }); }
     ss.del(KEY); if (!RM) gsap.from($$('.drawer_done>*', dw), { y: 24, opacity: 0, stagger: .08, duration: .9, ease: 'out' }); $('h2', done).focus({ preventScroll: true }); };
   next.addEventListener('click', () => { if (!check(steps[cur])) return; if (cur < steps.length - 1) return step(cur + 1);
     const d = save(), url = window.ALV_ENDPOINT; if (!url) return finish(d);
     const keep = next.innerHTML; next.disabled = true; next.textContent = 'A registar';
     // text/plain keeps this a simple request: the Apps Script web app cannot answer a CORS preflight
     fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ tipo: 'socio' }, Object.fromEntries(new FormData(f)))) })
-      .then(r => r.json()).then(r => { if (!r.ok) throw new Error(r.erro || ''); finish(d, r.numero); })
+      .then(r => r.json()).then(r => { if (!r.ok) throw new Error(r.erro || ''); finish(d, r.numero, r.repetido); })
       .catch(er => { lab.textContent = er.message || 'Não foi possível registar. Tenta de novo.'; })
       .finally(() => { next.disabled = false; next.innerHTML = keep; }); });
   back.addEventListener('click', () => cur > 0 && step(cur - 1));
@@ -378,7 +381,7 @@ function join(m){
   $$('.section_join', m).forEach(j => { const f = $('.join_form', j), inp = $('input', f), nm = $('.member-card_name', j); cardInit($('.member-card_wrap', j));
     const d = draft(); if (d.nome) { inp.value = [d.nome, d.apelido].filter(Boolean).join(' '); nm.textContent = inp.value; }
     on(inp, 'input', () => { nm.textContent = inp.value.trim() || 'O teu nome'; });
-    on(f, 'submit', e => { e.preventDefault(); const v = inp.value.trim().split(/\s+/).filter(Boolean); if (v.length) draft({ nome: v[0], apelido: v.slice(1).join(' ') }); openDrawer(); }); });
+    on(f, 'submit', e => { e.preventDefault(); const v = inp.value.trim().split(/\s+/).filter(Boolean); if (v.length) draft({ nome: v.join(' '), apelido: '' }); openDrawer(); }); });
 }
 function nextTag(m){
   const its = $$('.home-year_item', m); if (!its.length) return; const mo = new Date().getMonth();

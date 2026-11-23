@@ -154,7 +154,7 @@ DRAWER = f'''
         <form id="socio" novalidate>
           <fieldset class="stp on"><legend class="sr">Quem és</legend>
             <h2 class="d3" tabindex="-1">Quem és</h2><p class="sub">Dois minutos. Não há pagamento nesta fase.</p>
-            <div class="fm">{fl('nome', 'Nome próprio', 'req', ac='given-name')}{fl('apelido', 'Apelido', 'req', ac='family-name')}{DOB}{fl('natural', 'Natural de', 'req', ac='off', extra=' placeholder="Onde nasceste"')}</div>
+            <div class="fm">{fl('nome', 'Nome completo', 'nome', ac='name', full=True, extra=' placeholder="Como aparece no cartão de cidadão"')}{DOB}{fl('natural', 'Natural de', 'req', ac='off', extra=' placeholder="Onde nasceste"')}</div>
           </fieldset>
           <fieldset class="stp"><legend class="sr">Onde te encontramos</legend>
             <h2 class="d3" tabindex="-1">Onde te encontramos</h2><p class="sub">Muitos sócios vivem longe de Alvoco. Indica o país, se não for Portugal.</p>
