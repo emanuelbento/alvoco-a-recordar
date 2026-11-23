@@ -138,13 +138,13 @@ function boasVindas(proprio, numero, completo) {
     p('Olá, ' + esc(proprio) + '.') +
     p('Recebemos o teu pedido. O teu número de sócio é o <b>' + numero + '</b>. É teu a partir de hoje e não muda.') +
     pagamento +
-    p('Quando o pagamento chegar, confirmamos por email.') +
+    p('A joia paga-se até 30 dias depois do pedido. Quando chegar, confirmamos por email.') +
     p('Obrigado por caminhares connosco, na serra e na vida da aldeia.') +
     '<p style="margin:24px 0 0;font-size:14px;color:#4b5a50">' + NOME + '<br>Alvoco das Várzeas</p></div></div>';
   const texto = 'Olá, ' + proprio + '.\n\nRecebemos o teu pedido. O teu número de sócio é o ' + numero + '. É teu a partir de hoje e não muda.\n\n' +
     (livre || ('Falta só a joia: 10 € no ano em que entras, e a partir daí 5 € por ano.\n\n' + formas.map(([k, v]) => k + ': ' + v.replace('<br>', ', ')).join('\n') +
     '\n\nColoca o teu número de sócio, ' + String(numero).padStart(3, '0') + ', na descrição, para sabermos a quem pertence.')) +
-    '\n\nQuando o pagamento chegar, confirmamos por email.\n\nObrigado por caminhares connosco, na serra e na vida da aldeia.\n\n' + NOME + '\nAlvoco das Várzeas';
+    '\n\nA joia paga-se até 30 dias depois do pedido. Quando chegar, confirmamos por email.\n\nObrigado por caminhares connosco, na serra e na vida da aldeia.\n\n' + NOME + '\nAlvoco das Várzeas';
   return { assunto: 'O n.º ' + numero + ' do Alvôco a Recordar é teu', texto, html };
 }
 
@@ -167,9 +167,11 @@ function testarLigacao() {
   console.log('Próximo número de sócio: ' + proximoNumero());
 }
 
-function notion(path, payload) {
-  const res = UrlFetchApp.fetch('https://api.notion.com/v1/' + path, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
-    headers: { Authorization: 'Bearer ' + P.getProperty('NOTION_TOKEN'), 'Notion-Version': '2022-06-28' }, payload: JSON.stringify(payload) });
+function notion(path, payload, method) {
+  const opt = { method: method || 'post', contentType: 'application/json', muteHttpExceptions: true,
+    headers: { Authorization: 'Bearer ' + P.getProperty('NOTION_TOKEN'), 'Notion-Version': '2022-06-28' } };
+  if (payload) opt.payload = JSON.stringify(payload);
+  const res = UrlFetchApp.fetch('https://api.notion.com/v1/' + path, opt);
   const body = JSON.parse(res.getContentText());
   if (res.getResponseCode() >= 300) throw new Error('Notion ' + res.getResponseCode() + ': ' + (body.message || ''));
   return body;
