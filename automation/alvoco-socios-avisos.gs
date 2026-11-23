@@ -9,18 +9,19 @@
  *   2. Joia not ticked, request 7 and 25 days old -> reminder; at 31 days the board gets a list
  *   3. Quota of the year not ticked: from 15 March a reminder, from 1 April a last notice
  *      (and Estado = Quota em atraso)
- *   4. Quota of the year ticked after a notice -> "Quota recebida" (and Estado back to Ativo)
+ *   4. Quota of the year ticked -> "Quota recebida" (and Estado back to Ativo if it was in arrears)
  *
  * Each email is sent once: Notion keeps track in three columns that prepararAvisos() creates
  * ("Confirmação enviada", "Lembretes de joia", "Avisos de quota").
  *
  * Rules (approved by the board, change them here):
- *   joia within 30 days of the request; quota for the calendar year, paid by 31 March;
+ *   joia within 30 days of the request; quota for the calendar year, paid by 31 March, from 2027 on;
  *   whoever joins from 1 October has the next year covered by the joia.
  */
 
 const JOIA_DIAS = 30;
 const QUOTA = 5;
+const QUOTA_DESDE = 2027;                   // first year the automatic quota emails cover; earlier years are settled by hand
 const QUOTA_LIMITE = { mes: 3, dia: 31 };   // 31 March
 const QUOTA_AVISO = { mes: 3, dia: 15 };    // reminder from 15 March
 const HORAS = [9, 20];                      // reminders only between 09:00 and 20:59; confirmations at any hour
@@ -29,8 +30,7 @@ const HORAS = [9, 20];                      // reminders only between 09:00 and 
 function prepararAvisos() {
   const ano = +Utilities.formatDate(new Date(), TZ, 'yyyy');
   const props = { 'Confirmação enviada': { checkbox: {} }, 'Lembretes de joia': { number: { format: 'number' } }, 'Avisos de quota': { rich_text: {} } };
-  props['Quota ' + ano] = { checkbox: {} };
-  props['Quota ' + (ano + 1)] = { checkbox: {} };
+  for (let y = QUOTA_DESDE; y <= ano + 1; y++) props['Quota ' + y] = { checkbox: {} };
   notion('databases/' + P.getProperty('DB_SOCIOS'), { properties: props }, 'patch');
 
   // Members who already paid before the automation existed must not get a "welcome" now.
@@ -38,7 +38,9 @@ function prepararAvisos() {
   socios().forEach(s => {
     const upd = {};
     if (s.joia && !s.confirmada) upd['Confirmação enviada'] = { checkbox: true };
-    if (s.quota(ano) && !s.aviso.startsWith(ano + ':ok')) upd['Avisos de quota'] = rt(ano + ':ok');
+    let marca = s.aviso;
+    for (let y = QUOTA_DESDE; y <= ano + 1; y++) if (s.quota(y) && etapaQuota(marca, y) !== 'ok') marca = marcarQuota(marca, y, 'ok');
+    if (marca !== s.aviso) upd['Avisos de quota'] = rt(marca);
     if (Object.keys(upd).length) { atualizar(s.id, upd); n++; }
   });
 
@@ -66,14 +68,15 @@ function avisos(sim) {
   sim = sim && sim.hoje ? sim : null;
   const hora = sim ? sim.hora : +Utilities.formatDate(new Date(), TZ, 'H'), hoje_ = sim ? sim.hoje : hoje();
   const relatorio = [];
-  const enviar = (s, m) => { relatorio.push('N.º ' + n3(s.numero) + ' ' + s.nome + ': ' + m.assunto);
+  const enviar = (s, m) => { relatorio.push('N.º ' + n3(s.numero) + ' ' + s.nome + ': ' + m.assunto + (s.email ? '' : ' (sem email, não enviado)')); if (!s.email) return;
     GmailApp.sendEmail(sim ? sim.para : s.email, (sim ? '[simulação ' + hoje_ + ', para ' + s.email + '] ' : '') + m.assunto, m.texto, { name: NOME, htmlBody: m.html }); };
   const atualizar = (id, properties) => { if (!sim) notion('pages/' + id, { properties }, 'patch'); };
   const diasDesde = iso => Math.floor((new Date(hoje_ + 'T00:00:00Z') - new Date(iso.slice(0, 10) + 'T00:00:00Z')) / 864e5);
   const ano = +hoje_.slice(0, 4), deHoras = hora >= HORAS[0] && hora <= HORAS[1];
   const expirados = [];
-  socios().forEach(s => {
-    if (!s.email || /Saiu|Sem efeito/.test(s.estado)) return;
+  const todos = socios();
+  todos.forEach(s => {
+    if (/Saiu|Sem efeito/.test(s.estado)) return;   // members without email still get their Estado updated; only the email is skipped
     try {
       // 1. joia ticked: welcome
       if (s.joia && !s.confirmada) {
@@ -93,12 +96,12 @@ function avisos(sim) {
         return;
       }
       // 3 and 4. yearly quota, only for members whose joia does not cover this year
-      if (!s.joia || cobertoPelaJoia(s, ano)) return;
-      const etapa = s.aviso.startsWith(ano + ':') ? s.aviso.split(':')[1] : '';
+      if (!s.joia || ano < QUOTA_DESDE || cobertoPelaJoia(s, ano)) return;
+      const etapa = etapaQuota(s.aviso, ano);
       if (s.quota(ano)) {
         if (etapa !== 'ok') {
-          if (etapa) enviar(s, emailQuotaRecebida(s, ano));   // thank only who was reminded; quiet otherwise
-          const upd = { 'Avisos de quota': rt(ano + ':ok') };
+          enviar(s, emailQuotaRecebida(s, ano));   // every quota ticked gets its receipt, like the joia
+          const upd = { 'Avisos de quota': rt(marcarQuota(s.aviso, ano, 'ok')) };
           if (s.estado === 'Quota em atraso') upd['Estado'] = { select: { name: 'Ativo' } };
           atualizar(s.id, upd);
         }
@@ -108,10 +111,10 @@ function avisos(sim) {
       const md = hoje_.slice(5), limite = pad(QUOTA_LIMITE.mes) + '-' + pad(QUOTA_LIMITE.dia), aviso = pad(QUOTA_AVISO.mes) + '-' + pad(QUOTA_AVISO.dia);
       if (md > limite && etapa !== 'atraso') {
         enviar(s, emailQuota(s, ano, true));
-        atualizar(s.id, { 'Avisos de quota': rt(ano + ':atraso'), 'Estado': { select: { name: 'Quota em atraso' } } });
+        atualizar(s.id, { 'Avisos de quota': rt(marcarQuota(s.aviso, ano, 'atraso')), 'Estado': { select: { name: 'Quota em atraso' } } });
       } else if (md >= aviso && md <= limite && !etapa) {
         enviar(s, emailQuota(s, ano, false));
-        atualizar(s.id, { 'Avisos de quota': rt(ano + ':aviso') });
+        atualizar(s.id, { 'Avisos de quota': rt(marcarQuota(s.aviso, ano, 'aviso')) });
       }
     } catch (err) { console.error('Sócio ' + s.numero + ': ' + err); }
   });
@@ -120,6 +123,18 @@ function avisos(sim) {
     GmailApp.sendEmail(sim ? sim.para : P.getProperty('EMAIL_DIRECAO'), 'Pedidos de sócio sem joia há mais de ' + JOIA_DIAS + ' dias',
       'Estes pedidos passaram o prazo da joia. Se não houver notícias, muda o Estado para "Sem efeito" no Notion (o número não volta a ser usado).\n\n' +
       expirados.map(s => 'N.º ' + s.numero + ': ' + s.nome + ' (' + s.email + '), pedido a ' + s.pedido).join('\n'), { name: NOME });
+  }
+  // From 1 April, once a year: the board gets the full list of quotas still unpaid, including members without email
+  const chaveResumo = 'RESUMO_ATRASO_' + ano;
+  if (ano >= QUOTA_DESDE && deHoras && hoje_.slice(5) > pad(QUOTA_LIMITE.mes) + '-' + pad(QUOTA_LIMITE.dia) && (sim || !P.getProperty(chaveResumo))) {
+    const faltam = todos.filter(s => s.joia && !/Saiu|Sem efeito/.test(s.estado) && !cobertoPelaJoia(s, ano) && !s.quota(ano));
+    if (faltam.length) {
+      relatorio.push('Direção: ' + faltam.length + ' quota(s) de ' + ano + ' por pagar');
+      GmailApp.sendEmail(sim ? sim.para : P.getProperty('EMAIL_DIRECAO'), 'Quotas de ' + ano + ' por pagar: ' + faltam.length,
+        'O prazo acabou a 31 de março. Estes sócios ainda não têm o visto na Quota ' + ano + '. Quem tem email já recebeu o aviso; os outros só a Direção pode contactar.\n\n' +
+        faltam.map(s => 'N.º ' + n3(s.numero) + ': ' + s.nome + (s.email ? '' : ' (sem email)')).join('\n'), { name: NOME });
+    }
+    if (!sim) P.setProperty(chaveResumo, hoje_);
   }
   // Next year's quota column, ready before January
   if (!sim && hoje_.slice(5) >= '12-01') garantirColuna('Quota ' + (ano + 1));
@@ -244,6 +259,10 @@ function garantirColuna(nome) {
 }
 
 /* ---------- small helpers ---------- */
+
+// "Avisos de quota" keeps one step per year, for example "2027:ok 2028:aviso"
+const etapaQuota = (txt, ano) => { const m = String(txt || '').match(new RegExp('(^|\\s)' + ano + ':(\\w+)')); return m ? m[2] : ''; };
+const marcarQuota = (txt, ano, etapa) => (String(txt || '').replace(new RegExp('(^|\\s)' + ano + ':\\w+', 'g'), '').trim() + ' ' + ano + ':' + etapa).trim();
 
 const texto = pr => !pr ? '' : (pr.title || pr.rich_text || []).map(t => t.plain_text).join('').trim();
 const rt = v => ({ rich_text: [{ text: { content: v } }] });
