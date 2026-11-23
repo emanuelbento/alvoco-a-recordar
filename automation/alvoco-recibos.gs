@@ -19,6 +19,9 @@ const ASSOCIACAO = {
   cargo: 'A Tesoureira'
 };
 const JOIA = 10;
+// The receipt number is drawn in Exo ExtraBold from one image per character: the PDF converter has no web fonts.
+const GLIFOS = 'https://cdn.jsdelivr.net/gh/emanuelbento/alvoco-a-recordar@ac3667c2cffcb398316029a27a596d55475ff7bf/site/recibo/';
+const GLIFO_LARGURA = { '0': 25.27, '1': 14.55, '2': 22.88, '3': 22.59, '4': 24.63, '5': 23.47, '6': 23.59, '7': 21.83, '8': 24.42, '9': 23.59, 'barra': 18.88, 'n': 53.83, 'espaco': 9.67 };
 
 /**
  * Creates one receipt. tipo: 'joia' or 'quota'. ano: the quota year (for the joia, the year of entry).
@@ -79,7 +82,7 @@ function reciboHtml(r) {
       '<td valign="top" align="right" style="font-size:9pt;line-height:1.5;color:#5b6a60">' + esc(ASSOCIACAO.nome) + '<br>NIF ' + ASSOCIACAO.nif + '<br>' + esc(ASSOCIACAO.morada) + '<br>' + esc(ASSOCIACAO.cp) + '</td>' +
     '</tr></table>' +
     '<div style="margin:34pt 0 4pt;font-size:9pt;color:#476949">Recibo</div>' +
-    '<div style="font-size:30pt;font-weight:bold;color:#476949;margin:0 0 26pt">N.º ' + esc(r.numero) + '</div>' +
+    '<div style="margin:0 0 26pt;line-height:0">' + numeroExo(r.numero) + '</div>' +
     '<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1pt solid #c9d2c4;padding-top:12pt">' +
       '<tr><td width="50%" valign="top"><div style="' + lbl + '">Recebemos de</div><div style="' + val + '">' + esc(r.nome) + '</div></td>' +
       '<td width="25%" valign="top"><div style="' + lbl + '">Sócio n.º</div><div style="' + val + '">' + r.socio + '</div></td>' +
@@ -89,7 +92,8 @@ function reciboHtml(r) {
       '<td valign="top"><div style="' + lbl + '">Valor</div><div style="font-size:20pt;font-weight:bold;color:#14201a">' + euros(r.valor) + '</div></td></tr>' +
     '</table>' +
     '<div style="margin:26pt 0 0;font-size:10pt">Alvoco das Várzeas, ' + dataLonga(r.data) + '</div>' +
-    '<div style="margin:40pt 0 0;width:240px;border-top:1pt solid #14201a;padding-top:5pt;font-size:10pt">' + esc(ASSOCIACAO.cargo) + '<br>' + esc(ASSOCIACAO.assina) + '</div>' +
+    (assinatura() ? '<div style="margin:22pt 0 0;line-height:0"><img src="' + assinatura() + '" height="60" style="height:60px;width:auto"></div>' : '<div style="height:40pt"></div>') +
+    '<div style="margin:0;width:240px;border-top:1pt solid #14201a;padding-top:5pt;font-size:10pt">' + esc(ASSOCIACAO.cargo) + '<br>' + esc(ASSOCIACAO.assina) + '</div>' +
     (clean(P.getProperty('NOTA_RECIBO')) ? '<div style="margin:30pt 0 0;font-size:8pt;color:#5b6a60">' + esc(P.getProperty('NOTA_RECIBO')) + '</div>' : '') +
     '<div style="margin:16pt 0 0;font-size:8pt;color:#5b6a60">Documento emitido automaticamente pela ' + esc(ASSOCIACAO.nome) + '.</div>' +
     '</body></html>';
@@ -113,4 +117,33 @@ function testarRecibo() {
   const ano = anoAtual();
   const a = recibo(s, 'joia', ano, true), b = recibo(s, 'quota', ano + 1, true);
   GmailApp.sendEmail(Session.getActiveUser().getEmail(), '[teste] Recibos', 'Exemplos dos dois recibos, com o número TESTE.', { name: NOME, attachments: [a.pdf, b.pdf] });
+}
+
+/** "N.º 2026/001" as a row of Exo images. Anything that is not a digit or a slash (the TESTE number) falls back to text. */
+function numeroExo(numero) {
+  if (!/^\d{4}\/\d+$/.test(numero)) return '<span style="font-size:30pt;font-weight:bold;color:#476949;line-height:1.2">N.º ' + numero + '</span>';
+  const alto = 46, chaves = ['n', 'espaco'].concat(numero.split('').map(c => c === '/' ? 'barra' : c));
+  return chaves.map(k => '<img src="' + glifo(k) + '" height="' + alto + '" width="' + Math.round(GLIFO_LARGURA[k] * alto / 48) + '" style="height:' + alto + 'px;width:' + Math.round(GLIFO_LARGURA[k] * alto / 48) + 'px;vertical-align:bottom">').join('');
+}
+
+function glifo(k) {
+  const c = CacheService.getScriptCache(), chave = 'glifo-' + k, hit = c.get(chave);
+  if (hit) return hit;
+  const uri = 'data:image/png;base64,' + Utilities.base64Encode(UrlFetchApp.fetch(GLIFOS + k + '.png').getContent());
+  c.put(chave, uri, 21600);
+  return uri;
+}
+
+/** The treasurer's own signature: a PNG or JPG named "assinatura" in the Drive folder "Recibos Alvôco a Recordar".
+ *  If the file is not there, the receipt keeps the printed name under the line. */
+function assinatura() {
+  if (assinatura.uri !== undefined) return assinatura.uri;
+  assinatura.uri = '';
+  const it = DriveApp.getFoldersByName('Recibos Alvôco a Recordar'); if (!it.hasNext()) return '';
+  const pasta = it.next();
+  for (const nome of ['assinatura.png', 'assinatura.jpg', 'assinatura.jpeg']) {
+    const f = pasta.getFilesByName(nome);
+    if (f.hasNext()) { const b = f.next().getBlob(); assinatura.uri = 'data:' + b.getContentType() + ';base64,' + Utilities.base64Encode(b.getBytes()); break; }
+  }
+  return assinatura.uri;
 }
