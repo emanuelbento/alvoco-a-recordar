@@ -4,7 +4,9 @@ const C = require('./convert.js'), { SRC, OUT, SITE, M } = C;
 const read = f => fs.readFileSync(path.join(SRC, f), 'utf8');
 
 /* rules the Webflow structure needs on top of the prototype's (old names, converted with the rest).
-   html:not(.js) also describes the Webflow Designer canvas, where the script never runs: text rests in its final state there. */
+   html:not(.js) also describes the Webflow Designer canvas, where the script never runs: text rests in its final state there.
+   The Designer pads every childless element to 75px so it can be clicked. The lines, dots and lamps of this site are childless
+   on purpose, so the wf-design-mode rule gives them their real size back. A bare new Div Block keeps Webflow's placeholder. */
 const EXTRA = `
 .page-wrapper{}
 .main-wrapper{}
@@ -21,6 +23,7 @@ html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_bar{color:v
 html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_component .site-logo{color:var(--w)}
 html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_component .button{background:var(--w);color:var(--v-dd)}
 html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_burger{background:rgb(246 248 243 / .16)}
+html.wf-design-mode .wf-empty[class*="_"],html.wf-design-mode :is(i,b,s,span,em,button,canvas).wf-empty{padding-right:0;padding-bottom:0;box-shadow:none;outline-style:none!important}
 .ag-i:not([data-dia]) .ag-dt::after,.ag-i[data-dia=""] .ag-dt::after{content:"Data a anunciar";color:rgb(246 248 243 / .56)}
 .agenda_link[data-pagina=""],.agenda_link:not([data-pagina]){display:none}
 .agenda_link-label{display:inline}
@@ -221,6 +224,10 @@ fs.writeFileSync(path.join(OUT, 'dom.json'), JSON.stringify(dom));
 const bind = v => v.replace(/var\((--[\w-]+)\)/g, (m, n) => M.ALIAS[n] && n !== '--nav' ? 'var(' + M.ALIAS[n] + ')' : m); // --nav changes on phones, so it stays the page's own token
 const nat = [...C.native].map(([k, m]) => { const [sel, bp] = k.split('|'); const th = (!+bp && M.THEMED[sel]) || {};
   return { sel, bp: +bp, decls: [...m].map(([p, v]) => [p, th[p] ? 'var(' + th[p] + ')' : bind(v)]) }; });
+/* A grid class that names no tracks is drawn as Webflow's default two by two on the Designer canvas, never on the published site.
+   One auto column and one auto row say what the browser does anyway, so the canvas, the style panel and the site agree. */
+const tracked = new Set(nat.filter(r => r.decls.some(([p]) => /^grid-template/.test(p))).map(r => r.sel));
+nat.forEach(r => { if (!r.bp && !tracked.has(r.sel) && r.decls.some(([p, v]) => p === 'display' && /grid/.test(v))) r.decls.push(['grid-template-columns', 'auto'], ['grid-template-rows', 'auto']); });
 fs.writeFileSync(path.join(OUT, 'native.json'), JSON.stringify(nat));
 const block = bp => nat.filter(r => r.bp === bp).map(r => r.sel + '{' + r.decls.map(d => d.join(':')).join(';') + '}').join('\n');
 fs.writeFileSync(path.join(OUT, 'native.css'), block(0) + [991, 767, 479].map(bp => `\n@media screen and (max-width: ${bp}px){\n${block(bp)}\n}`).join(''));

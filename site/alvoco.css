@@ -829,6 +829,7 @@ html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_bar{color:v
 html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_component .site-logo{color:var(--w)}
 html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_component .button{background:var(--w);color:var(--v-dd)}
 html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro]) .nav_burger{background:rgb(246 248 243 / .16)}
+html.wf-design-mode .wf-empty[class*="_"],html.wf-design-mode :is(i,b,s,span,em,button,canvas).wf-empty{padding-right:0;padding-bottom:0;box-shadow:none;outline-style:none!important}
 .agenda_item:not([data-dia]) .agenda_date::after,.agenda_item[data-dia=""] .agenda_date::after{content:"Data a anunciar";color:rgb(246 248 243 / .56)}
 .agenda_link[data-pagina=""],.agenda_link:not([data-pagina]){display:none}
 html :where(.agenda_link-label){display:inline}
