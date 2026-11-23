@@ -6,7 +6,7 @@ R = pathlib.Path(__file__).parent
 A = R / 'assets' / 'img'
 LOGO_RAW = (A / 'logo-h.svg').read_text()
 LOGO = LOGO_RAW.replace('<svg ', '<svg aria-hidden="true" focusable="false" ', 1)
-MARK = '<svg viewBox="0 0 268 298" fill="currentColor" aria-hidden="true">' + (A / 'mark-inline.txt').read_text() + '</svg>'
+MARK = '<svg viewBox="0 0 292 298" fill="currentColor" aria-hidden="true">' + (A / 'mark-inline.txt').read_text() + '</svg>'
 J = 'https://cdn.jsdelivr.net/npm/'
 LIBS = ''.join(f'<script src="{J}gsap@3.13.0/dist/{f}.min.js"></script>' for f in
                ['gsap', 'ScrollTrigger', 'SplitText', 'CustomEase', 'DrawSVGPlugin', 'MotionPathPlugin', 'Flip'])
@@ -47,7 +47,7 @@ def top_groups(svg):
 
 G_MARK, G_WORD = top_groups(LOGO_RAW)
 LD_LOGO = f'''<svg class="ld-svg" viewBox="-3 -3 642.46 303.27" fill="currentColor" aria-hidden="true">
-  <defs><clipPath id="ldc"><rect class="ld-rect" x="-3" y="300" width="276" height="304"/></clipPath></defs>
+  <defs><clipPath id="ldc"><rect class="ld-rect" x="-3" y="300" width="300" height="304"/></clipPath></defs>
   <g class="ld-line" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round">{G_MARK}</g>
   <g class="ld-solid" clip-path="url(#ldc)">{G_MARK}</g>
   <g class="ld-word">{G_WORD}</g>

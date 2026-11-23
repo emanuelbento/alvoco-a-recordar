@@ -762,6 +762,18 @@ input,textarea,select{color-scheme:light}
 }
 @media (max-width:560px){.rv>div{grid-template-columns:1fr auto}.rv dd{grid-column:1/-1;grid-row:2}.dw-b,.dw-h,.dw-f{padding-inline:20px}}
 
+/* button label: on hover it rolls up to its own copy (Osmo button 016). The mask leaves room for accents and descenders. */
+.btn .btn-tx{display:inline-flex;overflow:clip;padding-block:.24em;margin-block:-.24em}
+.btn .btn-tx span{display:block;text-shadow:0 2.4em 0 currentColor;transition:translate .55s var(--ease)}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .btn:is(:hover,:focus-visible) .btn-tx span{translate:0 -2.4em}
+}
+/* line masks: deeper room below, for the cedilla and the descenders */
+.ln{padding-bottom:.24em;margin-bottom:-.24em}
+.sl-mask{padding-bottom:.24em;margin-bottom:-.24em}
+/* the last chapter of the story sits under its point: the line climbs to the right there and used to cross the text */
+@media (min-width:900px){.tr-ls .tr-b:last-child .tr-t{bottom:auto;top:36px}}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
   html.js [data-r]{visibility:visible}

@@ -68,7 +68,9 @@ if (window.Lenis && !RM) {
 }
 const stop = () => lenis && lenis.stop();
 const start = () => lenis && lenis.start();
-const dots = (scope = document) => $$('.btn', scope).forEach(b => { if (!b.querySelector('i')) b.insertAdjacentHTML('beforeend', '<i aria-hidden="true"></i>'); });
+const dots = (scope = document) => $$('.btn', scope).forEach(b => { if (!b.querySelector('i')) b.insertAdjacentHTML('beforeend', '<i aria-hidden="true"></i>');
+  if (b.querySelector('.btn-tx')) return; const tn = [...b.childNodes].find(n => n.nodeType === 3 && n.textContent.trim()); if (!tn) return;
+  const w = document.createElement('span'), s = document.createElement('span'); w.className = 'btn-tx'; s.textContent = tn.textContent.trim(); w.appendChild(s); tn.replaceWith(w); });
 const smooth = pts => { let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
   for (let i = 0; i < pts.length - 1; i++) { const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
     d += `C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; }
@@ -363,7 +365,7 @@ function drawer(){
   const ui = () => { bar.style.transform = `scaleX(${(cur + 1) / steps.length})`;
     lab.textContent = `Passo ${cur + 1} de ${steps.length}`; back.hidden = cur === 0;
     side.forEach((li, i) => { li.classList.toggle('on', i === cur); li.classList.toggle('ok', i < cur); });
-    next.firstChild.textContent = cur === steps.length - 1 ? 'Enviar pedido ' : 'Continuar '; if (cur === steps.length - 1) review(); };
+    (next.querySelector('.btn-tx span') || next.firstChild).textContent = cur === steps.length - 1 ? 'Enviar pedido' : 'Continuar'; if (cur === steps.length - 1) review(); };
   const check = st => { let ok = true;
     $$('.fl', st).forEach(fl => { if (!validate(fl, f)) ok = false; });
     $$('[data-must]', st).forEach(c => { const e = $('.er-g', c.closest('.mst')); e.textContent = c.checked ? '' : 'É preciso aceitar para continuar.'; if (!c.checked) ok = false; });
@@ -489,7 +491,7 @@ function night(m){
   const clock = $('.nt-clock', nt), mm = { v: 120 };
   const fmt = () => { clock.textContent = String(Math.floor(mm.v / 60)).padStart(2, '0') + ':' + String(Math.floor(mm.v % 60)).padStart(2, '0'); };
   ScrollTrigger.create({ trigger: nt, start: 'top top', end: 'bottom bottom', scrub: .5, animation: gsap.timeline({ defaults: { ease: 'none' } })
-    .to(mm, { v: 400, duration: 1, onUpdate: fmt }, 0)
+    .to(mm, { v: 360, duration: .93, onUpdate: fmt }, 0)
     .to($('.nt-tx .a', nt), { opacity: 0, y: -14, duration: .1 }, .4).fromTo($('.nt-tx .b', nt), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: .1 }, .5)
     .to($('.nt-dawn', nt), { opacity: 1, duration: .5 }, .48).to($('.st-cv', nt), { opacity: 0, duration: .35 }, .5)
     .to($('.nt-r .a', nt), { attr: { fill: '#3e4b3d' }, duration: .45 }, .5).to($$('.nt-r .b, .nt-r .c', nt), { attr: { fill: '#1b271d' }, duration: .45 }, .5) });
@@ -571,7 +573,7 @@ function caminhada(m){
   const q = s => $$(s, m);
   const placeSun = p => { const r = sm.getBoundingClientRect(), s = st.getBoundingClientRect(), z = sun.offsetWidth; gsap.set(sun, { x: r.left - s.left - z / 2, y: r.top - s.top - z / 2 + (1 - p) * z * 1.15 }); };
   const S = { t: 0 }, sunP = { p: 0 };
-  const upd = () => { const p = S.t, mm = 120 + p * 290; clk.textContent = String(Math.floor(mm / 60)).padStart(2, '0') + ':' + String(Math.floor(mm % 60)).padStart(2, '0');
+  const upd = () => { const p = S.t, mm = Math.min(360, 120 + p * 250); clk.textContent = String(Math.floor(mm / 60)).padStart(2, '0') + ':' + String(Math.floor(mm % 60)).padStart(2, '0');
     const d = gsap.utils.clamp(0, 1, (p - .02) / .9); km.textContent = (d * 9).toFixed(1).replace('.', ','); gsap.set(bar, { scaleX: d }); tks.forEach((t, i) => t.classList.toggle('on', d >= [0, .5, .99][i])); };
   const tl = gsap.timeline({ defaults: { ease: 'none' }, onUpdate: upd });
   tl.to(S, { t: 1, duration: 1 }, 0).fromTo(trail_, { drawSVG: '0%' }, { drawSVG: '100%', duration: .9 }, .02);

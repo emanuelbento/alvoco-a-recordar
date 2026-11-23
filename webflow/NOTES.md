@@ -218,3 +218,17 @@ The Chrome window on Emanuel's Mac does not resize below its current size from t
 - Published to webflow.io only. Site head, footer and the Global / Styles embed point at commit b22f647a49c9234de57fea7b79a7b07048e6b412.
 - Seen in the real browser at 1920 and at 390: home, sobre, rostos, a face page, caminhada, agenda, contactos, em-memoria, documentos, privacidade, cookies, 404. No console errors.
 - Site language is still English in Site settings > Localization (the head script corrects `lang`). Left for Emanuel.
+
+## Fixes on the version in Webflow (23 Nov 2026, evening)
+
+Emanuel looked at two redesign attempts (new buttons, contour lines behind page heads, a green ink reveal on photographs) and turned them down. The version in Webflow stays. Only these corrections went in, commit cc8023929000ad3414d1e8ff0924b1557601f35d:
+
+- Logo mark was cut on its right side in the loader, in the page transition, in the footer, on the member card and on the memorial page. The mark is 291.93 wide, the viewBox said 268 and the loader clip rectangle 276. Now `viewBox="0 0 292 298"` and the rectangle is 300 wide. `convert.js` accepts both widths when it swaps marks for sprite references. `build.js` adds two lines at start-up that correct any element still saying 268 (the drawer embed in Webflow still does, so the canvas shows those two cut while the site does not).
+- Walk clocks end at 06:00, on the home teaser and on the walk page. The hour is symbolic, not a measured arrival time.
+- Button label rolls up to its own copy on hover (the text motion of Osmo button 016). The script wraps the label in `.btn-tx > span`; the copy is a `text-shadow` 2.4em below. Shape, dot and colours of the buttons did not change.
+- Line masks (`.ln`, `.sl-mask`) have 0.24em of room below, compensated with a negative margin, so the cedilla and descenders are not clipped.
+- The last chapter of the home story sits under its point from 900px up. The line climbs to the right there and used to cross the paragraph.
+
+Checked on the published site at 1518 wide: loader draws the whole mark, the transition shows the whole mark, the night clock stops at 06:00, labels are wrapped, no console errors. `src/` now matches the prototype source used for this build.
+
+Rules that came out of the feedback: no lines over text, no device that resembles the CMD site (fine line ribbons behind titles), no colour treatment animated over photographs.
