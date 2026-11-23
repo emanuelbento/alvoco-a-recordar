@@ -10,7 +10,7 @@
  *   DB_SOCIOS        id of the "Sócios" database
  *   DB_MENSAGENS     id of the "Mensagens do site" database
  *   EMAIL_DIRECAO    address that is told about every new member and message
- *   MBWAY            number for MB WAY payments (leave empty if the board does not use it)
+ *   MBWAY            number for MB WAY payments (MbWay and MB_WAY also work) (leave empty if the board does not use it)
  *   IBAN             the association's IBAN
  *   TEXTO_PAGAMENTO  optional: replaces the payment block with a text of the board's own.
  *                    Script properties keep one line, so write it without line breaks.
@@ -18,6 +18,8 @@
 const P = PropertiesService.getScriptProperties();
 const TZ = 'Europe/Lisbon';
 const NOME = 'Associação Alvôco a Recordar';
+// PNG of the logo in the public repository, served by jsDelivr at a fixed commit (email clients do not show SVG)
+const LOGO = 'https://cdn.jsdelivr.net/gh/emanuelbento/alvoco-a-recordar@0483362ff889023aea69d8668848918951d4f06f/site/email-logo.png';
 const PAGAMENTOS = { 'MB WAY': 'MB WAY', 'Transferência bancária': 'Transferência bancária', 'Em mão, em Alvoco': 'Em mão', 'Em mão': 'Em mão' };
 const ASSUNTOS = ['Dúvida', 'Caminhada Noturna', 'Sócios e quotas', 'Partilhar uma memória'];
 
@@ -102,7 +104,8 @@ function contacto(d) {
 
 /** Welcome email: plain text for old clients, HTML for everyone else. The payment block comes from Script properties. */
 function boasVindas(proprio, numero) {
-  const mbway = clean(P.getProperty('MBWAY')), iban = clean(P.getProperty('IBAN')), livre = clean(P.getProperty('TEXTO_PAGAMENTO'));
+  // MBWAY, MbWay or MB_WAY: the property name is forgiving, the value is what matters
+  const mbway = clean(P.getProperty('MBWAY') || P.getProperty('MbWay') || P.getProperty('MB_WAY')), iban = clean(P.getProperty('IBAN')), livre = clean(P.getProperty('TEXTO_PAGAMENTO'));
   const formas = [];
   if (mbway) formas.push(['MB WAY', mbway]);
   if (iban) formas.push(['Transferência', iban + '<br>em nome da ' + NOME]);
@@ -116,8 +119,9 @@ function boasVindas(proprio, numero) {
     p('Põe o teu número de sócio, <b>' + numero + '</b>, no descritivo, para sabermos de quem é.');
   const html = '<div style="background:#eceee6;padding:32px 16px;font-family:Helvetica,Arial,sans-serif;color:#14201a;font-size:16px;line-height:1.55">' +
     '<div style="max-width:520px;margin:0 auto;background:#f6f8f3;padding:32px 28px">' +
+    '<img src="' + LOGO + '" width="150" height="70" alt="' + NOME + '" style="display:block;width:150px;height:auto;border:0;margin:0 0 28px">' +
     '<p style="margin:0 0 4px;font-size:13px;color:#476949">Cartão de sócio</p>' +
-    '<p style="margin:0 0 24px;font-size:56px;line-height:1;font-weight:800;color:#476949;letter-spacing:-1px">' + String(numero).padStart(4, '0') + '</p>' +
+    '<p style="margin:0 0 24px;font-size:64px;line-height:1;font-weight:800;color:#476949;letter-spacing:-1px">' + String(numero).padStart(3, '0') + '</p>' +
     p('Olá, ' + esc(proprio) + '.') +
     p('Recebemos o teu pedido. O teu número de sócio é o <b>' + numero + '</b>. É teu a partir de hoje e não muda.') +
     pagamento +
