@@ -4,7 +4,7 @@
  * Lives in the same Apps Script project as alvoco-site-forms.gs (second file, "Avisos.gs"),
  * so it shares the Script properties, the member card and the Notion helper.
  *
- * The board only ticks boxes in Notion. Every hour this file checks the database and:
+ * The board only ticks boxes in Notion. Every 5 minutes this file checks the database and:
  *   1. Joia ticked, confirmation not sent yet  -> "A tua inscrição está ativa" (and Estado = Ativo)
  *   2. Joia not ticked, request 7 and 25 days old -> reminder; at 31 days the board gets a list
  *   3. Quota of the year not ticked: from 15 March a reminder, from 1 April a last notice
@@ -25,7 +25,7 @@ const QUOTA_LIMITE = { mes: 3, dia: 31 };   // 31 March
 const QUOTA_AVISO = { mes: 3, dia: 15 };    // reminder from 15 March
 const HORAS = [9, 20];                      // reminders only between 09:00 and 20:59; confirmations at any hour
 
-/** Run once from the editor. Creates the Notion columns, marks what already happened, installs the hourly trigger. */
+/** Run once from the editor. Creates the Notion columns, marks what already happened, installs the trigger. Do not run it again: it would mark pending joias as already welcomed. */
 function prepararAvisos() {
   const ano = +Utilities.formatDate(new Date(), TZ, 'yyyy');
   const props = { 'Confirmação enviada': { checkbox: {} }, 'Lembretes de joia': { number: { format: 'number' } }, 'Avisos de quota': { rich_text: {} } };
@@ -42,12 +42,18 @@ function prepararAvisos() {
     if (Object.keys(upd).length) { atualizar(s.id, upd); n++; }
   });
 
-  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'avisos').forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger('avisos').timeBased().everyHours(1).create();
-  console.log('Pronto. Registos marcados como já tratados: ' + n + '. Acionador de hora a hora instalado.');
+  instalarAcionador();
+  console.log('Pronto. Registos marcados como já tratados: ' + n + '.');
 }
 
-/** The hourly job. Safe to run by hand: nothing is sent twice.
+/** Runs avisos every 5 minutes, so a ticked joia gets its welcome within 5 minutes. Safe to run again: it replaces the old trigger and touches nothing in Notion. */
+function instalarAcionador() {
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'avisos').forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('avisos').timeBased().everyMinutes(5).create();
+  console.log('Acionador instalado: avisos corre de 5 em 5 minutos.');
+}
+
+/** The job that runs every 5 minutes. Safe to run by hand: nothing is sent twice.
  *  sim (optional, for simulations only): { hoje: 'yyyy-MM-dd', hora: 0-23, para: 'email' }.
  *  In a simulation nothing changes in Notion and every email goes to sim.para instead of the member. */
 function avisos(sim) {
