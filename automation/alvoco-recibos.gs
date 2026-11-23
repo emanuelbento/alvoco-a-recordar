@@ -115,6 +115,8 @@ function extenso(v) {
 function testarRecibo() {
   const s = { nome: 'Teste Site', proprio: 'Teste', numero: 45, nif: '', admissao: hoje() };
   const ano = anoAtual();
+  const pasta = pastaRecibos(ano).getParents().next();   // creates the folder the first time, so the signature has somewhere to go
+  console.log('Pasta dos recibos: ' + pasta.getUrl() + (assinatura() ? ' (assinatura encontrada)' : ' (ainda sem assinatura.png)'));
   const a = recibo(s, 'joia', ano, true), b = recibo(s, 'quota', ano + 1, true);
   GmailApp.sendEmail(Session.getActiveUser().getEmail(), '[teste] Recibos', 'Exemplos dos dois recibos, com o número TESTE.', { name: NOME, attachments: [a.pdf, b.pdf] });
 }
