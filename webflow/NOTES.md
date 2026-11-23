@@ -187,3 +187,34 @@ Uploaded through the Designer in Emanuel's Chrome (Assets panel file input, `fil
 
 - https://alvoco-a-recordar-website.webflow.io renders like the prototype at 1920: hero 3D, trail, night, CMS year list with the "A seguir" tag, faces strip, memory, join, footer. jsDelivr serves the files, fonts load, no console errors.
 - Bug found: the HTML builder drops `<use>` inside `<svg>`, so every logo drawn from the sprite outside an embed was empty (nav, menu, footer mark, member card front and back, memorial placeholder). Fixed by adding DOM elements with tag `use` and attribute `href` (`#alv-mark`, `#alv-word`) through the element builder. They also render on the Designer canvas.
+- Bug found on /caminhada only: a very large fragment can leave inline spans behind as literal `##INLINEn##` tokens (the title highlight, the four caption kickers, the progress label, the three ticks). Every other page was checked for the token and is clean. Rebuilt with small fragments: title `4564ec81-35d5-e64c-74ed-a03fc3680e86`, captions `592c20ae-0872-6c63-e001-35eb1c0a3351`, progress `f3af0da9-6dbc-8108-c0cb-2ef545686f13`. Rule for next time: keep fragments with inline spans small and read the text back after a push.
+- The face page title was the static SEO title on every face. The script now writes `<name>, Rostos Alvocenses`. Binding the SEO title to the Name field in the template's page settings is still better for link previews and is left for the Designer.
+
+## The Designer canvas against the site (23 Nov 2026)
+
+The canvas runs no script and loads the stylesheet through the Global / Styles embed. Three things made it differ from the published site. All three are fixed and every page now has the same height on the canvas (1040 by 733) as the script-less build: home 8813, sobre 9053, rostos 2672, caminhada 7594, agenda 3082, contactos 2642, em-memoria 3005, documentos 2133.
+
+1. Nav theme. The script picks the nav colours from the section under it. Without it the nav sat in its light-page colours over the dark heroes. `html:not(.js) .page-wrapper:has(.main-wrapper[data-tema=claro])` now gives the resting state.
+2. Childless elements. The Designer adds `.wf-empty{padding-right:75px;padding-bottom:75px}` to every element without children so it can be clicked. The timeline line became a 75px bar, each dot a 75px disc. The stylesheet answers with `html.wf-design-mode .wf-empty[class*="_"]` and the same for `i, b, s, span, em, button, canvas`: anything carrying one of the site's own classes keeps its real size. A new Div Block with no class still gets Webflow's placeholder, so building in the Designer is not affected.
+3. Grids without tracks. A class with `display:grid` and no template is drawn by the Designer as its default two columns by two rows (it injects a `[data-wf-id]` rule per instance, with 75px minimum for empty tracks). The published CSS has no such rule, so the site showed one column and the canvas two. Nine classes now carry `grid-template-columns:auto; grid-template-rows:auto`, which is what the browser does anyway: home-night_text, home-memory_label, member-card_back, about-board_intro, memory-details_right, memory-details_photo, rostos-library_meta, walk-info_intro, contact_item, documents_title. `build.js` adds the pair to any native grid class without a template, so `out/native.json` matches Webflow.
+
+What the canvas cannot show, by nature: anything the script computes (the "A seguir" tag and the year on agenda dates, the composed alias on face cards, counters, the 3D hero, pinned scenes in motion). The canvas shows the resting layout.
+
+The canvas document is the iframe `#site-iframe-next`, same origin as the Designer, so it can be measured from the page with the browser extension. `?pageId=<id>` in the Designer address opens a page directly.
+
+## Phone width (23 Nov 2026)
+
+The Chrome window on Emanuel's Mac does not resize below its current size from the extension. The check was done with same-origin iframes 390px wide inside a page of the published site: media queries follow the iframe. All eleven pages: no horizontal overflow, menu overlay and membership drawer open and fit, caminhada scene and agenda timeline hold. Still missing: a real touch device (hover hints, momentum scroll, the weight of the 3D hero).
+
+## 404 page (23 Nov 2026)
+
+- Utility page id `6b04621c9378aa2492fa5b79` (not in `list_pages`, found by opening it from the Pages panel; the API accepts the id). Webflow's default block was replaced by the site shell: `page-wrapper` `7b03130e-b4f4-2672-d45c-e06c0380d391` with Global / Styles, Global / Nav, `main` (`data-page="erro"`), Global / Footer, Global / Drawer.
+- Content uses the page header classes of the other pages. One new native class, made in Webflow only and not part of the prototype build: `error_actions` (`grid-column:1/span 6; grid-row:1; display:flex; flex-wrap:wrap; gap 12px`, and `grid-column:1/-1; grid-row:auto` at 991).
+- Title "Página não encontrada, Alvôco a Recordar".
+- On the staging subdomain the page answers at `/404`, but a wrong address still shows Webflow's own generic page. To check again once the site has a plan and a domain.
+
+## State at the end of 23 Nov 2026
+
+- Published to webflow.io only. Site head, footer and the Global / Styles embed point at commit b22f647a49c9234de57fea7b79a7b07048e6b412.
+- Seen in the real browser at 1920 and at 390: home, sobre, rostos, a face page, caminhada, agenda, contactos, em-memoria, documentos, privacidade, cookies, 404. No console errors.
+- Site language is still English in Site settings > Localization (the head script corrects `lang`). Left for Emanuel.
