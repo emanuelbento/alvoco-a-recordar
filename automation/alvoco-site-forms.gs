@@ -131,7 +131,7 @@ function boasVindas(proprio, numero, completo) {
   const pagamento = livre ? p(esc(livre)) :
     p('Falta só a joia: <b>10 €</b> no ano em que entras, e a partir daí <b>5 €</b> por ano. Escolhe a forma que te der mais jeito:') +
     '<table role="presentation" style="border-collapse:collapse;width:100%;margin:0 0 16px;border-top:1px solid #d6dccf">' + linhas.replace(/<tr>/g, '<tr style="border-bottom:1px solid #d6dccf">') + '</table>' +
-    p('Põe o teu número de sócio, <b>' + numero + '</b>, no descritivo, para sabermos de quem é.');
+    p('Coloca o teu número de sócio, <b>' + String(numero).padStart(3, '0') + '</b>, na descrição, para sabermos a quem pertence.');
   const html = '<div style="background:#eceee6;padding:32px 16px;font-family:Helvetica,Arial,sans-serif;color:#14201a;font-size:16px;line-height:1.55">' +
     '<div style="max-width:520px;margin:0 auto;background:#f6f8f3;padding:32px 28px">' +
     cartao(completo, numero) +
@@ -143,7 +143,7 @@ function boasVindas(proprio, numero, completo) {
     '<p style="margin:24px 0 0;font-size:14px;color:#4b5a50">' + NOME + '<br>Alvoco das Várzeas</p></div></div>';
   const texto = 'Olá, ' + proprio + '.\n\nRecebemos o teu pedido. O teu número de sócio é o ' + numero + '. É teu a partir de hoje e não muda.\n\n' +
     (livre || ('Falta só a joia: 10 € no ano em que entras, e a partir daí 5 € por ano.\n\n' + formas.map(([k, v]) => k + ': ' + v.replace('<br>', ', ')).join('\n') +
-    '\n\nPõe o teu número de sócio no descritivo, para sabermos de quem é.')) +
+    '\n\nColoca o teu número de sócio, ' + String(numero).padStart(3, '0') + ', na descrição, para sabermos a quem pertence.')) +
     '\n\nQuando o pagamento chegar, confirmamos por email.\n\nObrigado por caminhares connosco, na serra e na vida da aldeia.\n\n' + NOME + '\nAlvoco das Várzeas';
   return { assunto: 'O n.º ' + numero + ' do Alvôco a Recordar é teu', texto, html };
 }
